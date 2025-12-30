@@ -551,11 +551,860 @@
             background: var(--bg-glass);
         }
 
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--bg-glass);
+            padding: 6px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .nav-tab:hover:not(.active) {
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-tab svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeSlideIn 0.3s ease-out;
+        }
+
+        /* Period Selector */
+        .period-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .period-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .period-btn:hover {
+            color: var(--text-secondary);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .period-btn.active {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        /* Overview Stats */
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Calendar Grid */
+        .calendar-section {
+            margin-bottom: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .calendar-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-nav-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-nav-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .calendar-nav-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .weekday-labels {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .weekday-label {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            border-color: transparent;
+            cursor: default;
+        }
+
+        .calendar-day.empty:hover {
+            transform: none;
+        }
+
+        .calendar-day.today {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .calendar-day.future {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        .calendar-day .day-number {
+            font-weight: 500;
+        }
+
+        .calendar-day .completion-indicator {
+            width: 100%;
+            height: 4px;
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            display: flex;
+            gap: 2px;
+            padding: 0 4px;
+        }
+
+        .completion-dot {
+            flex: 1;
+            height: 100%;
+            border-radius: 2px;
+            background: var(--border-subtle);
+        }
+
+        .completion-dot.completed {
+            background: linear-gradient(135deg, var(--accent-success), #059669);
+            box-shadow: 0 0 4px var(--accent-success-glow);
+        }
+
+        /* Heat Intensity Levels */
+        .calendar-day.heat-0 {
+            background: var(--bg-glass);
+        }
+
+        .calendar-day.heat-1 {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .calendar-day.heat-2 {
+            background: rgba(16, 185, 129, 0.3);
+        }
+
+        .calendar-day.heat-3 {
+            background: rgba(16, 185, 129, 0.5);
+        }
+
+        .calendar-day.heat-4 {
+            background: rgba(16, 185, 129, 0.7);
+        }
+
+        .calendar-day.heat-5 {
+            background: rgba(16, 185, 129, 0.9);
+        }
+
+        .calendar-day.heat-3,
+        .calendar-day.heat-4,
+        .calendar-day.heat-5 {
+            color: white;
+        }
+
+        /* Habit Legend */
+        .habit-legend {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 16px;
+        }
+
+        .legend-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-title svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-sm);
+            transition: background 0.2s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-name {
+            flex: 1;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .legend-streak {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .legend-streak.active {
+            color: var(--accent-success);
+        }
+
+        /* Heat Scale Legend */
+        .heat-legend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            justify-content: center;
+        }
+
+        .heat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .heat-scale {
+            display: flex;
+            gap: 3px;
+        }
+
+        .heat-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        /* Day Detail Modal */
+        .day-detail-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+
+        .day-detail-modal.visible {
+            display: flex;
+        }
+
+        .day-detail-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            width: 90%;
+            max-width: 360px;
+            animation: fadeSlideIn 0.3s ease-out;
+        }
+
+        .day-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .day-detail-date {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .day-detail-close {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day-detail-close:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .day-detail-close svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .day-detail-habits {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .day-detail-habit {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-sm);
+        }
+
+        .day-detail-habit.completed {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .day-detail-habit .habit-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day-detail-habit.completed .habit-status {
+            background: var(--accent-success);
+            border-color: var(--accent-success);
+        }
+
+        .day-detail-habit .habit-status svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+        }
+
+        .day-detail-habit .habit-name {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .day-detail-habit.completed .habit-name {
+            color: var(--accent-success);
+        }
+
         .date-display {
             text-align: center;
             color: var(--text-muted);
             font-size: 0.85rem;
             margin-bottom: 24px;
+        }
+
+        /* Category Styles */
+        .category-section {
+            margin-bottom: 16px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        .category-header:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .category-header.collapsed {
+            margin-bottom: 0;
+        }
+
+        .category-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .category-name {
+            flex: 1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .category-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .category-toggle {
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+
+        .category-header.collapsed .category-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .category-habits {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-left: 24px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+        }
+
+        .category-habits.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin: 0;
+        }
+
+        .uncategorized-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-subtle);
+        }
+
+        .uncategorized-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Manage Categories Button */
+        .manage-categories-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-glass);
+            border: 1px dashed var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .manage-categories-btn:hover {
+            border-style: solid;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .manage-categories-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Category Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: fadeSlideIn 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-close svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Category List */
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .category-list-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .category-list-item .category-color {
+            width: 20px;
+            height: 20px;
+        }
+
+        .category-list-item .category-info {
+            flex: 1;
+        }
+
+        .category-list-item .category-name {
+            font-size: 0.9rem;
+        }
+
+        .category-list-item .category-habit-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .category-action-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .category-action-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-glass);
+        }
+
+        .category-action-btn.delete:hover {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .category-action-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Add Category Form */
+        .add-category-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Category Select in Add Habit */
+        .category-select-wrapper {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .category-select {
+            flex: 1;
+            padding: 10px 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            padding-right: 36px;
+        }
+
+        .category-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .category-select option {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        /* Habit Item with Category Indicator */
+        .habit-item .habit-category-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Edit Habit Category Button */
+        .habit-edit-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .habit-item:hover .habit-edit-btn {
+            opacity: 1;
+        }
+
+        .habit-edit-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .habit-edit-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Empty Category State */
+        .empty-categories {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
         @media (max-width: 480px) {
@@ -573,6 +1422,10 @@
 
             .add-habit-wrapper button {
                 width: 100%;
+            }
+
+            .category-habits {
+                padding-left: 16px;
             }
         }
 
@@ -665,36 +1518,226 @@
                     <button class="logout-btn" onclick="logout()">Sign Out</button>
                 </div>
 
-                <div class="date-display" id="date-display"></div>
+                <!-- Navigation Tabs -->
+                <div class="nav-tabs">
+                    <button class="nav-tab active" id="tab-habits" onclick="switchTab('habits')">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        Today
+                    </button>
+                    <button class="nav-tab" id="tab-overview" onclick="switchTab('overview')">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Overview
+                    </button>
+                </div>
 
-                <div class="progress-section" id="progress-section">
-                    <div class="progress-header">
-                        <span class="progress-label">Today's Progress</span>
-                        <span class="progress-value" id="progress-text">0/0</span>
+                <!-- Today Tab Content -->
+                <div class="tab-content active" id="content-habits">
+                    <div class="date-display" id="date-display"></div>
+
+                    <div class="progress-section" id="progress-section">
+                        <div class="progress-header">
+                            <span class="progress-label">Today's Progress</span>
+                            <span class="progress-value" id="progress-text">0/0</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+
+                    <!-- Manage Categories Button -->
+                    <button class="manage-categories-btn" onclick="openCategoryModal()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Manage Categories
+                    </button>
+
+                    <div id="habit-list"></div>
+
+                    <div class="add-habit-section">
+                        <div class="add-habit-wrapper">
+                            <input type="text" id="new-habit" placeholder="Add a new habit...">
+                            <button class="add-btn" onclick="addHabit()">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Add
+                            </button>
+                        </div>
+                        <div class="category-select-wrapper">
+                            <select class="category-select" id="new-habit-category">
+                                <option value="">No category</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="reset-section">
+                        <button class="reset-btn" onclick="resetDay()">🔄 Reset All for Tomorrow</button>
                     </div>
                 </div>
 
-                <div id="habit-list"></div>
+                <!-- Overview Tab Content -->
+                <div class="tab-content" id="content-overview">
+                    <!-- Period Selector -->
+                    <div class="period-selector">
+                        <button class="period-btn active" data-period="week" onclick="setPeriod('week')">Week</button>
+                        <button class="period-btn" data-period="month" onclick="setPeriod('month')">Month</button>
+                        <button class="period-btn" data-period="year" onclick="setPeriod('year')">Year</button>
+                    </div>
 
-                <div class="add-habit-section">
-                    <div class="add-habit-wrapper">
-                        <input type="text" id="new-habit" placeholder="Add a new habit...">
-                        <button class="add-btn" onclick="addHabit()">
+                    <!-- Overview Stats -->
+                    <div class="overview-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-total-completions">0</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-completion-rate">0%</div>
+                            <div class="stat-label">Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-best-streak">0</div>
+                            <div class="stat-label">Best Streak</div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Section -->
+                    <div class="calendar-section">
+                        <div class="calendar-header">
+                            <span class="calendar-title" id="calendar-title">This Week</span>
+                            <div class="calendar-nav">
+                                <button class="calendar-nav-btn" onclick="navigateCalendar(-1)">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button class="calendar-nav-btn" onclick="navigateCalendar(1)">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="weekday-labels">
+                            <span class="weekday-label">Sun</span>
+                            <span class="weekday-label">Mon</span>
+                            <span class="weekday-label">Tue</span>
+                            <span class="weekday-label">Wed</span>
+                            <span class="weekday-label">Thu</span>
+                            <span class="weekday-label">Fri</span>
+                            <span class="weekday-label">Sat</span>
+                        </div>
+
+                        <div class="calendar-grid" id="calendar-grid"></div>
+
+                        <div class="heat-legend">
+                            <span class="heat-label">Less</span>
+                            <div class="heat-scale">
+                                <div class="heat-box heat-0"></div>
+                                <div class="heat-box heat-1"></div>
+                                <div class="heat-box heat-2"></div>
+                                <div class="heat-box heat-3"></div>
+                                <div class="heat-box heat-4"></div>
+                                <div class="heat-box heat-5"></div>
+                            </div>
+                            <span class="heat-label">More</span>
+                        </div>
+                    </div>
+
+                    <!-- Habit Legend -->
+                    <div class="habit-legend">
+                        <div class="legend-title">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
+                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            Add
-                        </button>
+                            Habit Streaks
+                        </div>
+                        <div class="legend-items" id="habit-legend-items"></div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="reset-section">
-                    <button class="reset-btn" onclick="resetDay()">🔄 Reset All for Tomorrow</button>
-                </div>
+    <!-- Day Detail Modal -->
+    <div class="day-detail-modal" id="day-detail-modal" onclick="closeDayDetail(event)">
+        <div class="day-detail-content" onclick="event.stopPropagation()">
+            <div class="day-detail-header">
+                <span class="day-detail-date" id="day-detail-date"></span>
+                <button class="day-detail-close" onclick="closeDayDetailModal()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="day-detail-habits" id="day-detail-habits"></div>
+        </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div class="modal-overlay" id="category-modal" onclick="closeCategoryModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title">Manage Categories</span>
+                <button class="modal-close" onclick="closeCategoryModalBtn()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="category-list" id="category-list"></div>
+
+            <div class="add-category-form">
+                <input type="text" id="new-category-name" placeholder="New category name...">
+                <div class="color-picker" id="color-picker"></div>
+                <button class="primary" onclick="addCategory()">Add Category</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Habit Category Modal -->
+    <div class="modal-overlay" id="edit-habit-modal" onclick="closeEditHabitModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title">Edit Habit</span>
+                <button class="modal-close" onclick="closeEditHabitModalBtn()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Habit Name</label>
+                <input type="text" id="edit-habit-name" placeholder="Habit name...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="category-select" id="edit-habit-category" style="width: 100%;">
+                    <option value="">No category</option>
+                </select>
+            </div>
+
+            <div class="btn-group" style="margin-top: 20px;">
+                <button class="primary" onclick="saveHabitEdit()">Save Changes</button>
+                <button class="secondary" style="color: #f87171;" onclick="deleteHabit()">Delete Habit</button>
             </div>
         </div>
     </div>
