@@ -4,10 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus | Habit Tracker</title>
-    <meta name="description" content="Build better habits with Focus - your premium daily habit tracking companion.">
-
-    <!-- Google Fonts -->
+    <title>Focus | Daily Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -15,24 +12,16 @@
     <style>
         :root {
             --bg-primary: #0a0a0f;
-            --bg-card: rgba(25, 25, 35, 0.8);
-            --bg-card-hover: rgba(35, 35, 50, 0.9);
-            --bg-glass: rgba(255, 255, 255, 0.03);
+            --bg-card: rgba(25, 25, 35, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.05);
             --accent-primary: #6366f1;
             --accent-secondary: #8b5cf6;
             --accent-success: #10b981;
-            --accent-glow: rgba(99, 102, 241, 0.4);
-            --accent-success-glow: rgba(16, 185, 129, 0.4);
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border-subtle: rgba(255, 255, 255, 0.06);
-            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
-            --shadow-glow: 0 0 40px var(--accent-glow);
-            --radius-sm: 8px;
+            --border-subtle: rgba(255, 255, 255, 0.1);
             --radius-md: 12px;
             --radius-lg: 16px;
-            --radius-xl: 24px;
         }
 
         * {
@@ -44,44 +33,32 @@
         body {
             background: var(--bg-primary);
             color: var(--text-primary);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
-                radial-gradient(ellipse 60% 40% at 100% 50%, rgba(139, 92, 246, 0.1), transparent),
-                radial-gradient(ellipse 60% 40% at 0% 80%, rgba(16, 185, 129, 0.08), transparent);
-            pointer-events: none;
-            z-index: -1;
+            padding: 20px;
         }
 
         .container {
             width: 100%;
-            max-width: 440px;
+            max-width: 480px;
+            position: relative;
         }
 
         .screen {
             display: none;
-            animation: fadeSlideIn 0.4s ease-out;
+            animation: fadeIn 0.4s ease;
         }
 
         .visible {
             display: block !important;
         }
 
-        @keyframes fadeSlideIn {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(10px);
             }
 
             to {
@@ -92,1656 +69,630 @@
 
         .glass-card {
             background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            padding: 32px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .brand {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .brand-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             border-radius: var(--radius-lg);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-glow);
-            animation: pulse 3s ease-in-out infinite;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                box-shadow: var(--shadow-glow);
-                transform: scale(1);
-            }
-
-            50% {
-                box-shadow: 0 0 60px var(--accent-glow);
-                transform: scale(1.02);
-            }
-        }
-
-        .brand-icon svg {
-            width: 32px;
-            height: 32px;
-            color: white;
-        }
-
-        .brand h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .brand p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-top: 4px;
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            margin-bottom: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 1rem;
-            transition: all 0.2s ease;
-        }
-
-        input::placeholder {
-            color: var(--text-muted);
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        button {
-            width: 100%;
-            padding: 14px 24px;
-            border: none;
-            border-radius: var(--radius-md);
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        button.primary {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
-        }
-
-        button.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
-        }
-
-        button.primary:active {
-            transform: translateY(0);
-        }
-
-        button.secondary {
-            background: var(--bg-glass);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-subtle);
-        }
-
-        button.secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text-primary);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin: 24px 0;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-subtle);
-        }
-
-        .error-message {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            font-size: 0.9rem;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .error-message.visible {
-            display: block;
-        }
-
-        .success-message {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #6ee7b7;
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            font-size: 0.9rem;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .success-message.visible {
-            display: block;
-        }
-
-        /* App Header */
+        /* Header */
         .app-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 20px;
         }
 
-        .app-header h2 {
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .header-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .header-icon svg {
-            width: 20px;
-            height: 20px;
+        .brand-title {
+            font-size: 1.5rem;
+            font-weight: 700;
             color: white;
         }
 
-        .logout-btn {
-            width: auto !important;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border-subtle);
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
-        .logout-btn:hover {
-            color: var(--text-primary);
-            border-color: rgba(255, 255, 255, 0.2);
-            background: var(--bg-glass);
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        /* Progress Section */
-        .progress-section {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-bottom: 24px;
-            border: 1px solid rgba(99, 102, 241, 0.2);
+        .icon-btn:hover {
+            color: white;
         }
 
-        .progress-header {
+        /* Day Controller */
+        .day-controller {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
         }
 
-        .progress-label {
-            font-size: 0.9rem;
+        .date-label {
+            font-size: 0.85rem;
             color: var(--text-secondary);
         }
 
-        .progress-value {
-            font-size: 0.9rem;
-            font-weight: 600;
+        .day-select {
+            background: transparent;
             color: var(--accent-primary);
+            border: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-align: right;
+            outline: none;
         }
 
-        .progress-bar {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: 4px;
-            transition: width 0.5s ease;
-            box-shadow: 0 0 10px var(--accent-glow);
+        .day-select option {
+            background: #1f1f2e;
+            color: white;
         }
 
         /* Habit List */
-        #habit-list {
+        .habit-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            min-height: 50px;
+            gap: 12px;
+            min-height: 100px;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .empty-state-icon {
-            font-size: 2.5rem;
-            margin-bottom: 12px;
-            opacity: 0.5;
-        }
-
-        .habit-item {
-            background: var(--bg-glass);
+        .habit-card {
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-subtle);
-            padding: 16px 20px;
             border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: 0.2s;
+        }
+
+        .habit-header {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            animation: habitIn 0.3s ease-out;
+            padding: 16px;
         }
 
-        @keyframes habitIn {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .habit-item:hover {
-            background: var(--bg-card-hover);
-            border-color: rgba(255, 255, 255, 0.1);
-            transform: translateX(4px);
-        }
-
-        .habit-item.done {
-            background: rgba(16, 185, 129, 0.08);
-            border-color: rgba(16, 185, 129, 0.2);
-        }
-
-        .habit-item.done:hover {
-            background: rgba(16, 185, 129, 0.12);
-        }
-
-        .habit-content {
+        .habit-main {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
+            cursor: pointer;
             flex: 1;
-        }
-
-        .habit-title {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            transition: all 0.2s ease;
-        }
-
-        .habit-item.done .habit-title {
-            color: var(--accent-success);
-            text-decoration: line-through;
         }
 
         .checkbox {
             width: 24px;
             height: 24px;
-            border-radius: 50%;
-            border: 2px solid var(--text-muted);
+            border-radius: 6px;
+            border: 2px solid var(--text-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.25s ease;
-            flex-shrink: 0;
+            transition: 0.2s;
         }
 
-        .checkbox svg {
-            width: 14px;
-            height: 14px;
-            color: white;
-            opacity: 0;
-            transform: scale(0);
-            transition: all 0.2s ease;
-        }
-
-        .habit-item.done .checkbox {
-            background: linear-gradient(135deg, var(--accent-success), #059669);
+        .habit-card.done .checkbox {
+            background: var(--accent-success);
             border-color: var(--accent-success);
-            box-shadow: 0 0 12px var(--accent-success-glow);
         }
 
-        .habit-item.done .checkbox svg {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Add Habit */
-        .add-habit-section {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-subtle);
-        }
-
-        .add-habit-wrapper {
-            display: flex;
-            gap: 12px;
-        }
-
-        .add-habit-wrapper input {
-            flex: 1;
-        }
-
-        .add-habit-wrapper button {
-            width: auto;
-            padding: 14px 20px;
-        }
-
-        .add-btn {
-            background: linear-gradient(135deg, var(--accent-success), #059669) !important;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .add-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .reset-section {
-            margin-top: 24px;
-        }
-
-        .reset-btn {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px dashed var(--border-subtle);
-            font-size: 0.9rem;
-        }
-
-        .reset-btn:hover {
-            border-style: solid;
-            color: var(--text-secondary);
-            background: var(--bg-glass);
-        }
-
-        /* Navigation Tabs */
-        .nav-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            background: var(--bg-glass);
-            padding: 6px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-subtle);
-        }
-
-        .nav-tab {
-            flex: 1;
-            padding: 12px 20px;
-            background: transparent;
-            border: none;
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
+        .habit-title {
             font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .habit-card.done .habit-title {
+            color: var(--text-secondary);
+            text-decoration: line-through;
+        }
+
+        /* Actions Button */
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.25s ease;
+            gap: 6px;
         }
 
-        .nav-tab:hover:not(.active) {
-            color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .nav-tab.active {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        .action-btn:hover,
+        .action-btn.active {
+            background: rgba(255, 255, 255, 0.1);
             color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            border-color: white;
         }
 
-        .nav-tab svg {
-            width: 18px;
-            height: 18px;
+        /* Details Section */
+        .habit-details {
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--border-subtle);
+            padding: 0 16px;
+            max-height: 0;
+            overflow: hidden;
+            transition: 0.3s ease;
         }
 
-        /* Tab Content */
-        .tab-content {
+        .habit-details.open {
+            padding: 16px;
+            max-height: 500px;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .detail-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: white;
+            padding: 10px;
+            font-family: inherit;
+            margin-bottom: 12px;
+            resize: none;
+        }
+
+        .upload-box {
+            border: 2px dashed var(--border-subtle);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upload-box:hover {
+            border-color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 6px;
+            margin-top: 10px;
             display: none;
         }
 
-        .tab-content.active {
+        .preview-img.visible {
             display: block;
-            animation: fadeSlideIn 0.3s ease-out;
         }
 
-        /* Period Selector */
-        .period-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
+        /* Add Section */
+        .add-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
         }
 
-        .period-btn {
-            flex: 1;
-            padding: 10px 16px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .period-btn:hover {
-            color: var(--text-secondary);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .period-btn.active {
-            background: rgba(99, 102, 241, 0.15);
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        /* Overview Stats */
-        .overview-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-
-        .stat-card:hover {
-            background: var(--bg-card-hover);
-            transform: translateY(-2px);
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Calendar Grid */
-        .calendar-section {
-            margin-bottom: 20px;
-        }
-
-        .calendar-header {
+        .week-selector {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 12px;
         }
 
-        .calendar-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .calendar-nav {
-            display: flex;
-            gap: 8px;
-        }
-
-        .calendar-nav-btn {
-            width: 32px;
-            height: 32px;
-            padding: 0;
+        .day-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             background: var(--bg-glass);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .day-btn.selected {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        /* Stats Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
         }
 
-        .calendar-nav-btn:hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.08);
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
         }
 
-        .calendar-nav-btn svg {
-            width: 16px;
-            height: 16px;
+        .modal-card {
+            background: #15151b;
+            width: 90%;
+            max-width: 440px;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            border: 1px solid var(--border-subtle);
+            max-height: 85vh;
+            overflow-y: auto;
         }
 
-        .weekday-labels {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            margin-bottom: 8px;
+        .stats-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: var(--bg-glass);
+            padding: 4px;
+            border-radius: 8px;
         }
 
-        .weekday-label {
-            text-align: center;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 500;
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-card);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 4px;
+            margin-bottom: 20px;
         }
 
-        .calendar-day {
+        .cal-day {
             aspect-ratio: 1;
-            border-radius: 6px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-size: 0.75rem;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.03);
         }
 
-        .calendar-day:hover {
-            border-color: var(--accent-primary);
-            transform: scale(1.05);
+        .cal-day.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
-        .calendar-day.empty {
-            background: transparent;
-            border-color: transparent;
-            cursor: default;
+        .cal-day.header {
+            background: none;
+            font-weight: bold;
         }
 
-        .calendar-day.empty:hover {
-            transform: none;
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
         }
 
-        .calendar-day.today {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        .calendar-day.future {
-            opacity: 0.4;
-            cursor: default;
-        }
-
-        .calendar-day .day-number {
-            font-weight: 500;
-        }
-
-        .calendar-day .completion-indicator {
-            width: 100%;
-            height: 4px;
-            position: absolute;
-            bottom: 4px;
-            left: 0;
-            display: flex;
-            gap: 2px;
-            padding: 0 4px;
-        }
-
-        .completion-dot {
-            flex: 1;
-            height: 100%;
+        .heat-cell {
+            aspect-ratio: 1;
             border-radius: 2px;
-            background: var(--border-subtle);
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .completion-dot.completed {
-            background: linear-gradient(135deg, var(--accent-success), #059669);
-            box-shadow: 0 0 4px var(--accent-success-glow);
-        }
-
-        /* Heat Intensity Levels */
-        .calendar-day.heat-0 {
-            background: var(--bg-glass);
-        }
-
-        .calendar-day.heat-1 {
-            background: rgba(16, 185, 129, 0.15);
-        }
-
-        .calendar-day.heat-2 {
-            background: rgba(16, 185, 129, 0.3);
-        }
-
-        .calendar-day.heat-3 {
-            background: rgba(16, 185, 129, 0.5);
-        }
-
-        .calendar-day.heat-4 {
-            background: rgba(16, 185, 129, 0.7);
-        }
-
-        .calendar-day.heat-5 {
-            background: rgba(16, 185, 129, 0.9);
-        }
-
-        .calendar-day.heat-3,
-        .calendar-day.heat-4,
-        .calendar-day.heat-5 {
-            color: white;
-        }
-
-        /* Habit Legend */
-        .habit-legend {
+        /* Inputs & Buttons */
+        input {
+            width: 100%;
+            padding: 14px;
             background: var(--bg-glass);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 16px;
-        }
-
-        .legend-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-secondary);
+            color: white;
             margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .legend-title svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .legend-items {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: var(--radius-sm);
-            transition: background 0.2s ease;
-        }
-
-        .legend-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .legend-name {
-            flex: 1;
-            font-size: 0.85rem;
-            color: var(--text-primary);
-        }
-
-        .legend-streak {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .legend-streak.active {
-            color: var(--accent-success);
-        }
-
-        /* Heat Scale Legend */
-        .heat-legend {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 16px;
-            justify-content: center;
-        }
-
-        .heat-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-        }
-
-        .heat-scale {
-            display: flex;
-            gap: 3px;
-        }
-
-        .heat-box {
-            width: 14px;
-            height: 14px;
-            border-radius: 3px;
-        }
-
-        /* Day Detail Modal */
-        .day-detail-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            backdrop-filter: blur(4px);
-        }
-
-        .day-detail-modal.visible {
-            display: flex;
-        }
-
-        .day-detail-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            width: 90%;
-            max-width: 360px;
-            animation: fadeSlideIn 0.3s ease-out;
-        }
-
-        .day-detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .day-detail-date {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .day-detail-close {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .day-detail-close:hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .day-detail-close svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .day-detail-habits {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .day-detail-habit {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: var(--bg-glass);
-            border-radius: var(--radius-sm);
-        }
-
-        .day-detail-habit.completed {
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .day-detail-habit .habit-status {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .day-detail-habit.completed .habit-status {
-            background: var(--accent-success);
-            border-color: var(--accent-success);
-        }
-
-        .day-detail-habit .habit-status svg {
-            width: 12px;
-            height: 12px;
+        button.primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: var(--radius-md);
             color: white;
-        }
-
-        .day-detail-habit .habit-name {
-            font-size: 0.9rem;
-            color: var(--text-primary);
-        }
-
-        .day-detail-habit.completed .habit-name {
-            color: var(--accent-success);
-        }
-
-        .date-display {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 24px;
-        }
-
-        /* Category Styles */
-        .category-section {
-            margin-bottom: 16px;
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 8px;
         }
 
-        .category-header:hover {
-            background: var(--bg-card-hover);
-        }
-
-        .category-header.collapsed {
-            margin-bottom: 0;
-        }
-
-        .category-color {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .category-name {
-            flex: 1;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .category-count {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.05);
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        .category-toggle {
-            width: 20px;
-            height: 20px;
-            color: var(--text-muted);
-            transition: transform 0.2s ease;
-        }
-
-        .category-header.collapsed .category-toggle {
-            transform: rotate(-90deg);
-        }
-
-        .category-habits {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding-left: 24px;
-            overflow: hidden;
-            transition: max-height 0.3s ease, opacity 0.3s ease;
-        }
-
-        .category-habits.collapsed {
-            max-height: 0;
-            opacity: 0;
-            margin: 0;
-        }
-
-        .uncategorized-section {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px dashed var(--border-subtle);
-        }
-
-        .uncategorized-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Manage Categories Button */
-        .manage-categories-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: var(--bg-glass);
-            border: 1px dashed var(--border-subtle);
-            border-radius: var(--radius-md);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-            transition: all 0.2s ease;
-        }
-
-        .manage-categories-btn:hover {
-            border-style: solid;
-            color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .manage-categories-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        /* Category Modal */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-overlay.visible {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            width: 90%;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: fadeSlideIn 0.3s ease-out;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-close:hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-close svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        /* Category List */
-        .category-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .category-list-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        button.secondary {
+            width: 100%;
             padding: 12px;
-            background: var(--bg-glass);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border-subtle);
-        }
-
-        .category-list-item .category-color {
-            width: 20px;
-            height: 20px;
-        }
-
-        .category-list-item .category-info {
-            flex: 1;
-        }
-
-        .category-list-item .category-name {
-            font-size: 0.9rem;
-        }
-
-        .category-list-item .category-habit-count {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .category-actions {
-            display: flex;
-            gap: 4px;
-        }
-
-        .category-action-btn {
-            width: 28px;
-            height: 28px;
-            padding: 0;
             background: transparent;
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .category-action-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-glass);
-        }
-
-        .category-action-btn.delete:hover {
-            color: #f87171;
-            border-color: rgba(248, 113, 113, 0.3);
-        }
-
-        .category-action-btn svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        /* Add Category Form */
-        .add-category-form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .color-picker {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .color-option {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid transparent;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.2s ease;
+            margin-top: 12px;
         }
 
-        .color-option:hover {
-            transform: scale(1.1);
-        }
-
-        .color-option.selected {
+        button.secondary:hover {
             border-color: white;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            color: white;
         }
 
-        /* Category Select in Add Habit */
-        .category-select-wrapper {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
+        /* Auth */
+        .auth-container {
+            text-align: center;
         }
 
-        .category-select {
-            flex: 1;
-            padding: 10px 12px;
+        .error-msg {
+            color: #f87171;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 20px;
+            padding: 16px;
             background: var(--bg-glass);
+            border-radius: var(--radius-md);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-family: inherit;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
             font-size: 0.85rem;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 16px;
-            padding-right: 36px;
+            color: var(--text-secondary);
         }
 
-        .category-select:focus {
-            outline: none;
-            border-color: var(--accent-primary);
+        .progress-percent {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-success);
         }
 
-        .category-select option {
-            background: var(--bg-primary);
-            color: var(--text-primary);
+        .progress-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
         }
 
-        /* Habit Item with Category Indicator */
-        .habit-item .habit-category-dot {
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-success));
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        /* Streak Badge */
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .streak-badge svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Log Indicator */
+        .log-indicator {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+
+        .log-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            flex-shrink: 0;
+            opacity: 0.3;
         }
 
-        /* Edit Habit Category Button */
-        .habit-edit-btn {
-            width: 28px;
-            height: 28px;
-            padding: 0;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: all 0.2s ease;
-        }
-
-        .habit-item:hover .habit-edit-btn {
+        .log-dot.active {
             opacity: 1;
         }
 
-        .habit-edit-btn:hover {
-            color: var(--text-primary);
+        .log-dot.note {
+            background: var(--accent-primary);
         }
 
-        .habit-edit-btn svg {
-            width: 14px;
-            height: 14px;
+        .log-dot.photo {
+            background: var(--accent-secondary);
         }
 
-        /* Empty Category State */
-        .empty-categories {
+        /* Delete Button */
+        .delete-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            width: 100%;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #f87171;
+        }
+
+        /* Stats Enhancements */
+        .stat-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 12px;
             text-align: center;
-            padding: 20px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
         }
 
-        @media (max-width: 480px) {
-            body {
-                padding: 20px 16px;
-            }
-
-            .glass-card {
-                padding: 24px;
-            }
-
-            .add-habit-wrapper {
-                flex-direction: column;
-            }
-
-            .add-habit-wrapper button {
-                width: 100%;
-            }
-
-            .category-habits {
-                padding-left: 16px;
-            }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-success);
         }
 
-        .loading {
-            position: relative;
-            pointer-events: none;
-        }
-
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin: -10px 0 0 -10px;
-            border: 2px solid transparent;
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
-
     <div class="container">
-
-        <!-- Auth Screen -->
         <div id="auth-screen" class="screen visible">
-            <div class="glass-card">
-                <div class="brand">
-                    <div class="brand-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h1>Focus</h1>
-                    <p>Build better habits daily</p>
-                </div>
-
-                <h2 id="auth-title">Sign In</h2>
-                <p class="subtitle" id="auth-subtitle">Enter your credentials to continue</p>
-
-                <div id="error-message" class="error-message"></div>
-                <div id="success-message" class="success-message"></div>
-
-                <div class="form-group">
-                    <label class="form-label" for="email-input">Email</label>
-                    <input type="email" id="email-input" placeholder="you@example.com" autocomplete="email">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="password-input">Password</label>
-                    <input type="password" id="password-input" placeholder="Enter your password"
-                        autocomplete="current-password">
-                </div>
-
-                <div class="btn-group">
-                    <button class="primary" id="auth-submit-btn" onclick="handleAuth()">Sign In</button>
-                </div>
-
-                <div class="divider">or</div>
-
-                <button class="secondary" id="auth-toggle-btn" onclick="toggleAuthMode()">Create an account</button>
+            <div class="glass-card auth-container">
+                <h2>Focus Tracker</h2>
+                <div id="auth-error" class="error-msg"></div>
+                <input type="email" id="email" placeholder="Email">
+                <input type="password" id="password" placeholder="Password">
+                <button class="primary" onclick="handleAuth()">Sign In</button>
+                <div style="margin-top:16px; cursor:pointer; color:var(--text-secondary)" onclick="toggleAuthMode()"
+                    id="auth-toggle-text">Need an account? Sign Up</div>
             </div>
         </div>
 
-        <!-- Main App Screen -->
         <div id="app-screen" class="screen">
             <div class="glass-card">
                 <div class="app-header">
-                    <h2>
-                        <div class="header-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    <div class="brand-title">Focus</div>
+                    <div class="header-actions">
+                        <button class="icon-btn" onclick="openStats()">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
-                        </div>
-                        My Habits
-                    </h2>
-                    <button class="logout-btn" onclick="logout()">Sign Out</button>
-                </div>
-
-                <!-- Navigation Tabs -->
-                <div class="nav-tabs">
-                    <button class="nav-tab active" id="tab-habits" onclick="switchTab('habits')">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                        </svg>
-                        Today
-                    </button>
-                    <button class="nav-tab" id="tab-overview" onclick="switchTab('overview')">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        Overview
-                    </button>
-                </div>
-
-                <!-- Today Tab Content -->
-                <div class="tab-content active" id="content-habits">
-                    <div class="date-display" id="date-display"></div>
-
-                    <div class="progress-section" id="progress-section">
-                        <div class="progress-header">
-                            <span class="progress-label">Today's Progress</span>
-                            <span class="progress-value" id="progress-text">0/0</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                        </div>
-                    </div>
-
-                    <!-- Manage Categories Button -->
-                    <button class="manage-categories-btn" onclick="openCategoryModal()">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                        </svg>
-                        Manage Categories
-                    </button>
-
-                    <div id="habit-list"></div>
-
-                    <div class="add-habit-section">
-                        <div class="add-habit-wrapper">
-                            <input type="text" id="new-habit" placeholder="Add a new habit...">
-                            <button class="add-btn" onclick="addHabit()">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4" />
-                                </svg>
-                                Add
-                            </button>
-                        </div>
-                        <div class="category-select-wrapper">
-                            <select class="category-select" id="new-habit-category">
-                                <option value="">No category</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="reset-section">
-                        <button class="reset-btn" onclick="resetDay()">🔄 Reset All for Tomorrow</button>
+                        </button>
+                        <div class="logout-text" onclick="signOut()">Sign Out</div>
                     </div>
                 </div>
 
-                <!-- Overview Tab Content -->
-                <div class="tab-content" id="content-overview">
-                    <!-- Period Selector -->
-                    <div class="period-selector">
-                        <button class="period-btn active" data-period="week" onclick="setPeriod('week')">Week</button>
-                        <button class="period-btn" data-period="month" onclick="setPeriod('month')">Month</button>
-                        <button class="period-btn" data-period="year" onclick="setPeriod('year')">Year</button>
+                <div class="day-controller">
+                    <span class="date-label" id="current-date-display">...</span>
+                    <select id="day-override" class="day-select" onchange="changeDayMode()">
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </div>
+
+                <div class="progress-container" id="progress-container">
+                    <div class="progress-header">
+                        <span class="progress-label">Today's Progress</span>
+                        <span class="progress-percent" id="progress-percent">0%</span>
                     </div>
-
-                    <!-- Overview Stats -->
-                    <div class="overview-stats">
-                        <div class="stat-card">
-                            <div class="stat-value" id="stat-total-completions">0</div>
-                            <div class="stat-label">Completed</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="stat-completion-rate">0%</div>
-                            <div class="stat-label">Rate</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="stat-best-streak">0</div>
-                            <div class="stat-label">Best Streak</div>
-                        </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
                     </div>
+                </div>
 
-                    <!-- Calendar Section -->
-                    <div class="calendar-section">
-                        <div class="calendar-header">
-                            <span class="calendar-title" id="calendar-title">This Week</span>
-                            <div class="calendar-nav">
-                                <button class="calendar-nav-btn" onclick="navigateCalendar(-1)">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-                                <button class="calendar-nav-btn" onclick="navigateCalendar(1)">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
+                <div class="habit-list" id="habit-list"></div>
 
-                        <div class="weekday-labels">
-                            <span class="weekday-label">Sun</span>
-                            <span class="weekday-label">Mon</span>
-                            <span class="weekday-label">Tue</span>
-                            <span class="weekday-label">Wed</span>
-                            <span class="weekday-label">Thu</span>
-                            <span class="weekday-label">Fri</span>
-                            <span class="weekday-label">Sat</span>
-                        </div>
-
-                        <div class="calendar-grid" id="calendar-grid"></div>
-
-                        <div class="heat-legend">
-                            <span class="heat-label">Less</span>
-                            <div class="heat-scale">
-                                <div class="heat-box heat-0"></div>
-                                <div class="heat-box heat-1"></div>
-                                <div class="heat-box heat-2"></div>
-                                <div class="heat-box heat-3"></div>
-                                <div class="heat-box heat-4"></div>
-                                <div class="heat-box heat-5"></div>
-                            </div>
-                            <span class="heat-label">More</span>
-                        </div>
+                <div class="add-section">
+                    <div class="detail-label">New Routine Item</div>
+                    <input type="text" id="new-habit-text" placeholder="e.g. 30min Running">
+                    <div class="week-selector" id="day-toggles">
+                        <button class="day-btn" data-day="0">M</button>
+                        <button class="day-btn" data-day="1">T</button>
+                        <button class="day-btn" data-day="2">W</button>
+                        <button class="day-btn" data-day="3">T</button>
+                        <button class="day-btn" data-day="4">F</button>
+                        <button class="day-btn" data-day="5">S</button>
+                        <button class="day-btn" data-day="6">S</button>
                     </div>
-
-                    <!-- Habit Legend -->
-                    <div class="habit-legend">
-                        <div class="legend-title">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            Habit Streaks
-                        </div>
-                        <div class="legend-items" id="habit-legend-items"></div>
-                    </div>
+                    <button class="primary" onclick="addHabit()">Add to Schedule</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Day Detail Modal -->
-    <div class="day-detail-modal" id="day-detail-modal" onclick="closeDayDetail(event)">
-        <div class="day-detail-content" onclick="event.stopPropagation()">
-            <div class="day-detail-header">
-                <span class="day-detail-date" id="day-detail-date"></span>
-                <button class="day-detail-close" onclick="closeDayDetailModal()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+        <div id="stats-modal" class="modal-overlay">
+            <div class="modal-card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <h3>Progress Overview</h3>
+                    <button class="icon-btn" onclick="closeStats()">✕</button>
+                </div>
+
+                <div class="stats-tabs">
+                    <button class="tab-btn active" onclick="switchTab('week')" id="tab-week">Week</button>
+                    <button class="tab-btn" onclick="switchTab('month')" id="tab-month">Month</button>
+                    <button class="tab-btn" onclick="switchTab('year')" id="tab-year">Year</button>
+                </div>
+
+                <div id="stats-content">
+                </div>
+
+                <button class="secondary" onclick="exportData()">
+                    <svg style="vertical-align:middle; margin-right:6px;" width="16" height="16" fill="none"
+                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
+                    Export Data (JSON)
                 </button>
             </div>
-            <div class="day-detail-habits" id="day-detail-habits"></div>
         </div>
     </div>
-
-    <!-- Category Management Modal -->
-    <div class="modal-overlay" id="category-modal" onclick="closeCategoryModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <span class="modal-title">Manage Categories</span>
-                <button class="modal-close" onclick="closeCategoryModalBtn()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <div class="category-list" id="category-list"></div>
-
-            <div class="add-category-form">
-                <input type="text" id="new-category-name" placeholder="New category name...">
-                <div class="color-picker" id="color-picker"></div>
-                <button class="primary" onclick="addCategory()">Add Category</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Habit Category Modal -->
-    <div class="modal-overlay" id="edit-habit-modal" onclick="closeEditHabitModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <span class="modal-title">Edit Habit</span>
-                <button class="modal-close" onclick="closeEditHabitModalBtn()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Habit Name</label>
-                <input type="text" id="edit-habit-name" placeholder="Habit name...">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Category</label>
-                <select class="category-select" id="edit-habit-category" style="width: 100%;">
-                    <option value="">No category</option>
-                </select>
-            </div>
-
-            <div class="btn-group" style="margin-top: 20px;">
-                <button class="primary" onclick="saveHabitEdit()">Save Changes</button>
-                <button class="secondary" style="color: #f87171;" onclick="deleteHabit()">Delete Habit</button>
-            </div>
-        </div>
-    </div>
-
     <script src="app.js"></script>
 </body>
 
