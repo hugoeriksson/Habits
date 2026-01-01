@@ -28,60 +28,308 @@
         </div>
 
         <div id="app-screen" class="screen">
-            <div class="glass-card">
-                <div class="app-header">
-                    <div class="brand-title">Focus</div>
-                    <div class="header-actions">
-                        <button class="icon-btn" onclick="openStats()">
-                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path
-                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-btn active" data-view="checkin" onclick="switchView('checkin')">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Check-in</span>
+                </button>
+                <button class="nav-btn" data-view="morning" onclick="switchView('morning')">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>Morning</span>
+                </button>
+                <button class="nav-btn" data-view="work" onclick="switchView('work')">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>Work</span>
+                </button>
+                <button class="nav-btn" data-view="meals" onclick="switchView('meals')">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Meals</span>
+                </button>
+            </nav>
+
+            <!-- CHECK-IN VIEW -->
+            <div id="view-checkin" class="app-view active">
+                <div class="glass-card">
+                    <div class="app-header">
+                        <div class="brand-title">Daily Check-in</div>
+                        <div class="header-actions">
+                            <button class="icon-btn" onclick="openStats()">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </button>
+                            <div class="logout-text" onclick="signOut()">Sign Out</div>
+                        </div>
+                    </div>
+
+                    <div class="day-controller">
+                        <span class="date-label" id="current-date-display">...</span>
+                        <select id="day-override" class="day-select" onchange="changeDayMode()">
+                            <option value="0">Monday</option>
+                            <option value="1">Tuesday</option>
+                            <option value="2">Wednesday</option>
+                            <option value="3">Thursday</option>
+                            <option value="4">Friday</option>
+                            <option value="5">Saturday</option>
+                            <option value="6">Sunday</option>
+                        </select>
+                    </div>
+
+                    <!-- Mood Input -->
+                    <div class="checkin-section">
+                        <label class="section-title">How do you feel?</label>
+                        <div class="mood-slider-container">
+                            <input type="range" id="mood-input" min="1" max="10" value="5" class="mood-slider">
+                            <div class="mood-labels">
+                                <span>1</span>
+                                <span id="mood-value" class="mood-current">5</span>
+                                <span>10</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wind-down Routine from Yesterday -->
+                    <div class="checkin-section">
+                        <label class="section-title">Yesterday's Wind-down Routine</label>
+                        <div id="winddown-list" class="checkin-list"></div>
+                    </div>
+
+                    <!-- Sleep Stats -->
+                    <div class="checkin-section">
+                        <label class="section-title">Sleep Stats (Garmin)</label>
+
+                        <div class="sleep-input-row">
+                            <label>Sleep Score</label>
+                            <input type="number" id="sleep-score" min="1" max="100" placeholder="1-100">
+                        </div>
+
+                        <div class="sleep-input-row dual">
+                            <div>
+                                <label>Sleep Start</label>
+                                <input type="time" id="sleep-start">
+                            </div>
+                            <div>
+                                <label>Sleep End</label>
+                                <input type="time" id="sleep-end">
+                            </div>
+                        </div>
+
+                        <div class="sleep-stages">
+                            <div class="sleep-stage">
+                                <label>Deep Sleep</label>
+                                <div class="time-input-group">
+                                    <input type="number" id="deep-hours" min="0" max="12" placeholder="h">
+                                    <span>:</span>
+                                    <input type="number" id="deep-mins" min="0" max="59" placeholder="m">
+                                </div>
+                            </div>
+                            <div class="sleep-stage">
+                                <label>REM Sleep</label>
+                                <div class="time-input-group">
+                                    <input type="number" id="rem-hours" min="0" max="12" placeholder="h">
+                                    <span>:</span>
+                                    <input type="number" id="rem-mins" min="0" max="59" placeholder="m">
+                                </div>
+                            </div>
+                            <div class="sleep-stage">
+                                <label>Light Sleep</label>
+                                <div class="time-input-group">
+                                    <input type="number" id="light-hours" min="0" max="12" placeholder="h">
+                                    <span>:</span>
+                                    <input type="number" id="light-mins" min="0" max="59" placeholder="m">
+                                </div>
+                            </div>
+                            <div class="sleep-stage">
+                                <label>Awake Time</label>
+                                <div class="time-input-group">
+                                    <input type="number" id="awake-hours" min="0" max="12" placeholder="h">
+                                    <span>:</span>
+                                    <input type="number" id="awake-mins" min="0" max="59" placeholder="m">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="primary" onclick="saveCheckin()">Save Check-in & Start Day</button>
+                </div>
+            </div>
+
+            <!-- MORNING ROUTINE VIEW -->
+            <div id="view-morning" class="app-view">
+                <div class="glass-card">
+                    <div class="app-header">
+                        <div class="brand-title">Morning Routine</div>
+                        <div class="header-actions">
+                            <button class="icon-btn" onclick="openStats()">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="progress-container" id="morning-progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Morning Progress</span>
+                            <span class="progress-percent" id="morning-progress-percent">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="morning-progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="habit-list" id="morning-list"></div>
+
+                    <div class="add-section">
+                        <div class="detail-label">Add Morning Task</div>
+                        <input type="text" id="new-morning-task" placeholder="e.g. Cold shower">
+                        <input type="text" id="new-task-details" placeholder="Task details (optional)">
+                        <div class="week-selector" id="morning-day-toggles">
+                            <button class="day-btn" data-day="0">M</button>
+                            <button class="day-btn" data-day="1">T</button>
+                            <button class="day-btn" data-day="2">W</button>
+                            <button class="day-btn" data-day="3">T</button>
+                            <button class="day-btn" data-day="4">F</button>
+                            <button class="day-btn" data-day="5">S</button>
+                            <button class="day-btn" data-day="6">S</button>
+                        </div>
+                        <button class="primary" onclick="addMorningTask()">Add to Routine</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WORK/POMODORO VIEW -->
+            <div id="view-work" class="app-view">
+                <div class="glass-card">
+                    <div class="app-header">
+                        <div class="brand-title">Work Sessions</div>
+                        <div class="header-actions">
+                            <button class="icon-btn" onclick="openStats()">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="progress-container" id="work-progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Pomodoros Completed</span>
+                            <span class="progress-percent" id="pomodoro-count">0/0</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="work-progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div id="pomodoro-list" class="pomodoro-list"></div>
+
+                    <div class="add-section">
+                        <div class="detail-label">Log Pomodoro Block</div>
+                        <div class="pomodoro-input-row">
+                            <input type="time" id="pomo-time" class="pomo-time-input">
+                            <select id="pomo-tag" class="pomo-tag-select">
+                                <option value="Deep Work">Deep Work</option>
+                                <option value="Meetings">Meetings</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Research">Research</option>
+                                <option value="Learning">Learning</option>
+                                <option value="Creative">Creative</option>
+                                <option value="Break">Break</option>
+                            </select>
+                        </div>
+                        <input type="text" id="pomo-notes" placeholder="What did you work on? (optional)">
+                        <button class="primary" onclick="addPomodoro()">Log Pomodoro ✓</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEALS & WATER VIEW -->
+            <div id="view-meals" class="app-view">
+                <div class="glass-card">
+                    <div class="app-header">
+                        <div class="brand-title">Meals & Hydration</div>
+                        <div class="header-actions">
+                            <button class="icon-btn" onclick="openStats()">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Water Tracker -->
+                    <div class="water-tracker">
+                        <div class="water-display">
+                            <span class="water-icon">💧</span>
+                            <span id="water-count" class="water-count">0</span>
+                            <span class="water-label">glasses today</span>
+                        </div>
+                        <div class="water-progress">
+                            <div class="water-bar" id="water-bar" style="width: 0%"></div>
+                        </div>
+                        <button class="water-btn" onclick="addWater()">
+                            <span>💧 +1 Glass</span>
                         </button>
-                        <div class="logout-text" onclick="signOut()">Sign Out</div>
+                    </div>
+
+                    <!-- Meals List -->
+                    <div class="section-title">Today's Meals</div>
+                    <div id="meals-list" class="meals-list"></div>
+
+                    <div class="add-section">
+                        <div class="detail-label">Log Meal</div>
+                        <div class="meal-input-row">
+                            <select id="meal-type" class="meal-type-select">
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snack">Snack</option>
+                            </select>
+                            <input type="time" id="meal-time" class="meal-time-input">
+                        </div>
+                        <textarea id="meal-description" class="meal-desc" rows="2"
+                            placeholder="What did you eat?"></textarea>
+                        <div class="upload-box" id="meal-upload-box">
+                            <span class="upload-hint">📷 Click to add photo</span>
+                            <input type="file" id="meal-photo" hidden accept="image/*">
+                            <img id="meal-preview" class="preview-img">
+                        </div>
+                        <button class="primary" onclick="addMeal()">Log Meal</button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="day-controller">
-                    <span class="date-label" id="current-date-display">...</span>
-                    <select id="day-override" class="day-select" onchange="changeDayMode()">
-                        <option value="0">Monday</option>
-                        <option value="1">Tuesday</option>
-                        <option value="2">Wednesday</option>
-                        <option value="3">Thursday</option>
-                        <option value="4">Friday</option>
-                        <option value="5">Saturday</option>
-                        <option value="6">Sunday</option>
-                    </select>
+        <!-- Task Info Modal -->
+        <div id="task-info-modal" class="modal-overlay">
+            <div class="modal-card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <h3 id="info-modal-title">Task Details</h3>
+                    <button class="icon-btn" onclick="closeInfoModal()">✕</button>
                 </div>
-
-                <div class="progress-container" id="progress-container">
-                    <div class="progress-header">
-                        <span class="progress-label">Today's Progress</span>
-                        <span class="progress-percent" id="progress-percent">0%</span>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="habit-list" id="habit-list"></div>
-
-                <div class="add-section">
-                    <div class="detail-label">New Routine Item</div>
-                    <input type="text" id="new-habit-text" placeholder="e.g. 30min Running">
-                    <div class="week-selector" id="day-toggles">
-                        <button class="day-btn" data-day="0">M</button>
-                        <button class="day-btn" data-day="1">T</button>
-                        <button class="day-btn" data-day="2">W</button>
-                        <button class="day-btn" data-day="3">T</button>
-                        <button class="day-btn" data-day="4">F</button>
-                        <button class="day-btn" data-day="5">S</button>
-                        <button class="day-btn" data-day="6">S</button>
-                    </div>
-                    <button class="primary" onclick="addHabit()">Add to Schedule</button>
-                </div>
+                <div id="info-modal-content"></div>
+                <button class="primary" onclick="closeInfoModal()">Got it!</button>
             </div>
         </div>
 
@@ -128,6 +376,11 @@
                     <span class="log-dot note" title="Note"></span>
                     <span class="log-dot photo" title="Photo"></span>
                 </div>
+                <button class="info-btn" title="Task Details" style="display: none;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
                 <button class="action-btn">
                     <span class="btn-text">Log</span>
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -183,6 +436,49 @@
                 <div class="stat-value active-days"></div>
                 <div class="stat-label">Active Days</div>
             </div>
+        </div>
+    </template>
+
+    <!-- Pomodoro Card Template -->
+    <template id="pomodoro-card-template">
+        <div class="pomo-card">
+            <div class="pomo-time-display"></div>
+            <div class="pomo-info">
+                <span class="pomo-tag-badge"></span>
+                <span class="pomo-notes"></span>
+            </div>
+            <button class="delete-pomo-btn" title="Remove">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </template>
+
+    <!-- Meal Card Template -->
+    <template id="meal-card-template">
+        <div class="meal-card">
+            <div class="meal-header">
+                <span class="meal-type-badge"></span>
+                <span class="meal-time-display"></span>
+                <button class="delete-meal-btn" title="Remove">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="meal-description"></div>
+            <img class="meal-photo" style="display: none;">
+        </div>
+    </template>
+
+    <!-- Winddown Check Item Template -->
+    <template id="winddown-item-template">
+        <div class="winddown-item">
+            <label class="winddown-label">
+                <input type="checkbox" class="winddown-check">
+                <span class="winddown-title"></span>
+            </label>
         </div>
     </template>
 

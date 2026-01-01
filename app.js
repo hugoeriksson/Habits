@@ -5,106 +5,201 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- STATE ---
 let user = null;
-let habits = [];
+let morningTasks = [];
 let isSignUp = false;
 let activeDayIndex = (new Date().getDay() + 6) % 7;
+let currentView = 'checkin';
+
+// Today's data
+let todayStr = new Date().toISOString().split('T')[0];
+let waterCount = 0;
+let pomodoros = [];
+let meals = [];
+let checkinData = null;
 
 // Local Storage Wrappers
 const getLocal = (k) => JSON.parse(localStorage.getItem(k)) || {};
 const setLocal = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
+// Load local schedules
 let localSchedule = getLocal('focus_schedule_days');
-let localLogs = getLocal('focus_logs'); // Notes & Images
-let localHistory = getLocal('focus_history'); // Completion History { "YYYY-MM-DD_habitId": true }
+let localHistory = getLocal('focus_history');
+let localLogs = getLocal('focus_logs');
 
-// --- STREAK CALCULATION ---
-function calculateStreak(habitId) {
-    let streak = 0;
-    const today = new Date();
+// Winddown routine items (configurable)
+const winddownItems = [
+    'No screens 1 hour before bed',
+    'Evening stretching/yoga',
+    'Read for 20 minutes',
+    'Prepare tomorrow\'s clothes',
+    'Journal/reflection',
+    'Bedroom temperature set',
+    'No caffeine after 2pm'
+];
 
-    // Check backwards from today
-    for (let i = 0; i < 365; i++) {
-        const checkDate = new Date(today);
-        checkDate.setDate(today.getDate() - i);
-        const dateStr = checkDate.toISOString().split('T')[0];
-        const key = `${dateStr}_${habitId}`;
-
-        if (localHistory[key]) {
-            streak++;
-        } else if (i > 0) {
-            // Allow today to be incomplete but break on any other missed day
-            break;
-        }
+// Task details for info modals
+const taskDetails = {
+    'interval_training': {
+        title: 'Interval Training',
+        content: `
+            <h4>Warm-up (5 min)</h4>
+            <p>Light jog, dynamic stretches, arm circles</p>
+            <h4>Main Set (20 min)</h4>
+            <ul>
+                <li>30s sprint / 30s rest × 10</li>
+                <li>1 min recovery walk</li>
+                <li>30s sprint / 30s rest × 10</li>
+            </ul>
+            <h4>Cool-down (5 min)</h4>
+            <p>Walking, static stretches, deep breathing</p>
+        `
+    },
+    'cold_shower': {
+        title: 'Cold Shower Protocol',
+        content: `
+            <p>Start with warm water, gradually decrease temperature.</p>
+            <ul>
+                <li>Final 2-3 minutes: cold water</li>
+                <li>Focus on controlled breathing</li>
+                <li>Target: full body exposure</li>
+            </ul>
+        `
+    },
+    'breakfast': {
+        title: 'Breakfast Guidelines',
+        content: `
+            <p><strong>Macro targets:</strong></p>
+            <ul>
+                <li>Protein: 30g</li>
+                <li>Carbs: 50g</li>
+                <li>Fats: 15g</li>
+            </ul>
+            <p><strong>Options:</strong></p>
+            <ul>
+                <li>Oatmeal + eggs + fruit</li>
+                <li>Greek yogurt parfait with nuts</li>
+                <li>Protein smoothie with banana</li>
+            </ul>
+        `
     }
-    return streak;
-}
-
-// --- PROGRESS BAR ---
-function updateProgressBar() {
-    const today = new Date();
-    const todayDayIndex = (today.getDay() + 6) % 7;
-
-    // Get habits scheduled for today
-    const todaysHabits = habits.filter(h => {
-        const schedule = localSchedule[h.id];
-        return !schedule || schedule.includes(todayDayIndex);
-    });
-
-    const total = todaysHabits.length;
-    const completed = todaysHabits.filter(h => h.is_completed).length;
-    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-    document.getElementById('progress-percent').textContent = `${percent}%`;
-    document.getElementById('progress-fill').style.width = `${percent}%`;
-
-    // Hide progress container if no habits
-    document.getElementById('progress-container').style.display = total > 0 ? 'block' : 'none';
-}
+};
 
 // --- DOM ---
 const ui = {
     authScreen: document.getElementById('auth-screen'),
     appScreen: document.getElementById('app-screen'),
-    email: document.getElementById('email'), pass: document.getElementById('password'),
-    authError: document.getElementById('auth-error'), authBtn: document.querySelector('#auth-screen button.primary'),
-    authToggle: document.getElementById('auth-toggle-text'), dateDisplay: document.getElementById('current-date-display'),
-    daySelect: document.getElementById('day-override'), list: document.getElementById('habit-list'),
-    newInput: document.getElementById('new-habit-text'), dayToggles: document.getElementById('day-toggles'),
-    statsModal: document.getElementById('stats-modal'), statsContent: document.getElementById('stats-content')
+    email: document.getElementById('email'),
+    pass: document.getElementById('password'),
+    authError: document.getElementById('auth-error'),
+    authBtn: document.querySelector('#auth-screen button.primary'),
+    authToggle: document.getElementById('auth-toggle-text'),
+    dateDisplay: document.getElementById('current-date-display'),
+    daySelect: document.getElementById('day-override'),
+    morningList: document.getElementById('morning-list'),
+    pomoList: document.getElementById('pomodoro-list'),
+    mealsList: document.getElementById('meals-list'),
+    statsModal: document.getElementById('stats-modal'),
+    statsContent: document.getElementById('stats-content'),
+    infoModal: document.getElementById('task-info-modal'),
+    winddownList: document.getElementById('winddown-list')
 };
 
 // --- INIT ---
 window.addEventListener('DOMContentLoaded', () => {
+    todayStr = new Date().toISOString().split('T')[0];
     setupDate();
+    setupMoodSlider();
+    setupMealUpload();
     setupAddButtons();
     checkSession();
 });
 
 function setupDate() {
     const today = new Date();
-    ui.dateDisplay.textContent = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    if (ui.dateDisplay) {
+        ui.dateDisplay.textContent = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
     activeDayIndex = (today.getDay() + 6) % 7;
-    ui.daySelect.value = activeDayIndex;
+    if (ui.daySelect) {
+        ui.daySelect.value = activeDayIndex;
+    }
+}
+
+function setupMoodSlider() {
+    const moodSlider = document.getElementById('mood-input');
+    const moodValue = document.getElementById('mood-value');
+    if (moodSlider && moodValue) {
+        moodSlider.oninput = () => {
+            moodValue.textContent = moodSlider.value;
+        };
+    }
+}
+
+function setupMealUpload() {
+    const uploadBox = document.getElementById('meal-upload-box');
+    const fileInput = document.getElementById('meal-photo');
+    const preview = document.getElementById('meal-preview');
+
+    if (uploadBox && fileInput) {
+        uploadBox.onclick = () => fileInput.click();
+        fileInput.onchange = function () {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    preview.classList.add('visible');
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        };
+    }
+}
+
+function setupAddButtons() {
+    // Morning day toggles
+    const morningToggles = document.getElementById('morning-day-toggles');
+    if (morningToggles) {
+        morningToggles.querySelectorAll('.day-btn').forEach(btn => {
+            btn.onclick = () => btn.classList.toggle('selected');
+        });
+    }
 }
 
 function changeDayMode() {
     activeDayIndex = parseInt(ui.daySelect.value);
-    renderList();
+    renderMorningList();
 }
 
-function setupAddButtons() {
-    ui.dayToggles.querySelectorAll('.day-btn').forEach(btn => btn.onclick = () => btn.classList.toggle('selected'));
+// --- VIEW SWITCHING ---
+function switchView(view) {
+    currentView = view;
+    document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+    document.getElementById(`view-${view}`)?.classList.add('active');
+    document.querySelector(`.nav-btn[data-view="${view}"]`)?.classList.add('active');
+
+    // Load data for each view
+    if (view === 'checkin') loadCheckinView();
+    if (view === 'morning') renderMorningList();
+    if (view === 'work') renderPomodoros();
+    if (view === 'meals') renderMealsView();
 }
 
 // --- AUTH ---
 async function checkSession() {
     const { data } = await sb.auth.getSession();
-    if (data.session) { user = data.session.user; showApp(); }
+    if (data.session) {
+        user = data.session.user;
+        showApp();
+    }
 }
 
 async function handleAuth() {
     const email = ui.email.value, password = ui.pass.value;
-    ui.authError.style.display = 'none'; ui.authBtn.textContent = 'Processing...';
+    ui.authError.style.display = 'none';
+    ui.authBtn.textContent = 'Processing...';
 
     let error;
     if (isSignUp) {
@@ -117,7 +212,8 @@ async function handleAuth() {
     }
 
     if (error) {
-        ui.authError.textContent = error.message; ui.authError.style.display = 'block';
+        ui.authError.textContent = error.message;
+        ui.authError.style.display = 'block';
         ui.authBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
     }
 }
@@ -128,231 +224,501 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 function toggleAuthMode() {
-    isSignUp = !isSignUp; ui.authBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+    isSignUp = !isSignUp;
+    ui.authBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
     ui.authToggle.textContent = isSignUp ? 'Have an account? Sign In' : 'Need an account? Sign Up';
 }
 
 async function signOut() { await sb.auth.signOut(); }
-function showApp() { ui.authScreen.classList.remove('visible'); ui.appScreen.classList.add('visible'); loadHabits(); }
-function showAuth() { ui.appScreen.classList.remove('visible'); ui.authScreen.classList.add('visible'); }
-
-// --- HABITS ---
-async function loadHabits() {
-    ui.list.innerHTML = '<div class="loading-indicator">Loading...</div>';
-    const { data } = await sb.from('habits').select('*').eq('user_id', user.id).order('id', { ascending: true });
-    if (data) { habits = data; renderList(); }
+function showApp() {
+    ui.authScreen.classList.remove('visible');
+    ui.appScreen.classList.add('visible');
+    loadAllData();
+}
+function showAuth() {
+    ui.appScreen.classList.remove('visible');
+    ui.authScreen.classList.add('visible');
 }
 
-async function addHabit() {
-    const title = ui.newInput.value.trim();
-    const selectedDays = [];
-    ui.dayToggles.querySelectorAll('.day-btn.selected').forEach(btn => selectedDays.push(parseInt(btn.dataset.day)));
+// --- DATA LOADING ---
+async function loadAllData() {
+    await Promise.all([
+        loadMorningTasks(),
+        loadTodayCheckin(),
+        loadTodayPomodoros(),
+        loadTodayMeals(),
+        loadTodayWater()
+    ]);
+    loadCheckinView();
+}
 
-    if (!title || selectedDays.length === 0) return alert("Enter name and select days.");
+// --- CHECK-IN VIEW ---
+function loadCheckinView() {
+    renderWinddownList();
+    loadExistingCheckinData();
+}
 
-    const { data } = await sb.from('habits').insert([{ title, user_id: user.id }]).select().single();
+function renderWinddownList() {
+    if (!ui.winddownList) return;
+    ui.winddownList.innerHTML = '';
+
+    const template = document.getElementById('winddown-item-template');
+    winddownItems.forEach((item, idx) => {
+        const clone = template.content.cloneNode(true);
+        clone.querySelector('.winddown-title').textContent = item;
+        const checkbox = clone.querySelector('.winddown-check');
+        checkbox.dataset.index = idx;
+
+        // Check if already checked from today's checkin
+        if (checkinData && checkinData.winddown_completed) {
+            checkbox.checked = checkinData.winddown_completed[idx] || false;
+        }
+
+        ui.winddownList.appendChild(clone);
+    });
+}
+
+async function loadExistingCheckinData() {
+    const { data } = await sb.from('daily_checkins').select('*')
+        .eq('user_id', user.id)
+        .eq('date', todayStr)
+        .single();
+
     if (data) {
-        localSchedule[data.id] = selectedDays;
-        setLocal('focus_schedule_days', localSchedule);
-        habits.push(data);
-        ui.newInput.value = '';
-        ui.dayToggles.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
-        renderList();
+        checkinData = data;
+        // Populate form with existing data
+        if (data.mood) document.getElementById('mood-input').value = data.mood;
+        document.getElementById('mood-value').textContent = data.mood || 5;
+        if (data.sleep_score) document.getElementById('sleep-score').value = data.sleep_score;
+        if (data.sleep_start) document.getElementById('sleep-start').value = data.sleep_start;
+        if (data.sleep_end) document.getElementById('sleep-end').value = data.sleep_end;
+        if (data.deep_sleep_mins) {
+            document.getElementById('deep-hours').value = Math.floor(data.deep_sleep_mins / 60);
+            document.getElementById('deep-mins').value = data.deep_sleep_mins % 60;
+        }
+        if (data.rem_sleep_mins) {
+            document.getElementById('rem-hours').value = Math.floor(data.rem_sleep_mins / 60);
+            document.getElementById('rem-mins').value = data.rem_sleep_mins % 60;
+        }
+        if (data.light_sleep_mins) {
+            document.getElementById('light-hours').value = Math.floor(data.light_sleep_mins / 60);
+            document.getElementById('light-mins').value = data.light_sleep_mins % 60;
+        }
+        if (data.awake_mins) {
+            document.getElementById('awake-hours').value = Math.floor(data.awake_mins / 60);
+            document.getElementById('awake-mins').value = data.awake_mins % 60;
+        }
     }
 }
 
-async function toggleCheck(id, currentStatus) {
-    const newStatus = !currentStatus;
-    const idx = habits.findIndex(h => h.id == id);
-    if (idx > -1) habits[idx].is_completed = newStatus;
+async function saveCheckin() {
+    const mood = parseInt(document.getElementById('mood-input').value);
+    const sleepScore = parseInt(document.getElementById('sleep-score').value) || null;
+    const sleepStart = document.getElementById('sleep-start').value || null;
+    const sleepEnd = document.getElementById('sleep-end').value || null;
 
-    // 1. Render UI immediately
-    renderList();
+    const deepH = parseInt(document.getElementById('deep-hours').value) || 0;
+    const deepM = parseInt(document.getElementById('deep-mins').value) || 0;
+    const remH = parseInt(document.getElementById('rem-hours').value) || 0;
+    const remM = parseInt(document.getElementById('rem-mins').value) || 0;
+    const lightH = parseInt(document.getElementById('light-hours').value) || 0;
+    const lightM = parseInt(document.getElementById('light-mins').value) || 0;
+    const awakeH = parseInt(document.getElementById('awake-hours').value) || 0;
+    const awakeM = parseInt(document.getElementById('awake-mins').value) || 0;
 
-    // 2. Save Historical Data locally (So we can see it in stats)
-    // We construct a key based on TODAY's date, not the override date, 
-    // to ensure history is accurate to when you actually clicked it.
-    const todayStr = new Date().toISOString().split('T')[0];
-    const key = `${todayStr}_${id}`;
+    // Gather winddown checkboxes
+    const winddownCompleted = {};
+    ui.winddownList.querySelectorAll('.winddown-check').forEach(cb => {
+        winddownCompleted[cb.dataset.index] = cb.checked;
+    });
 
-    if (newStatus) {
-        localHistory[key] = true;
+    const checkinRecord = {
+        user_id: user.id,
+        date: todayStr,
+        mood,
+        sleep_score: sleepScore,
+        sleep_start: sleepStart,
+        sleep_end: sleepEnd,
+        deep_sleep_mins: deepH * 60 + deepM,
+        rem_sleep_mins: remH * 60 + remM,
+        light_sleep_mins: lightH * 60 + lightM,
+        awake_mins: awakeH * 60 + awakeM,
+        winddown_completed: winddownCompleted
+    };
+
+    const { error } = await sb.from('daily_checkins').upsert(checkinRecord, { onConflict: 'user_id,date' });
+
+    if (error) {
+        console.error('Error saving check-in:', error);
+        alert('Error saving check-in. Check console for details.');
     } else {
-        delete localHistory[key];
+        checkinData = checkinRecord;
+        switchView('morning');
     }
-    setLocal('focus_history', localHistory);
-
-    // 3. Sync Current Status to DB
-    await sb.from('habits').update({ is_completed: newStatus }).eq('id', id);
 }
 
-// --- RENDER LIST ---
-function renderList() {
-    ui.list.innerHTML = '';
-    const visibleHabits = habits.filter(h => {
-        const schedule = localSchedule[h.id];
+// --- MORNING ROUTINE ---
+async function loadMorningTasks() {
+    const { data } = await sb.from('morning_tasks').select('*')
+        .eq('user_id', user.id)
+        .order('id', { ascending: true });
+    if (data) morningTasks = data;
+    renderMorningList();
+}
+
+function renderMorningList() {
+    if (!ui.morningList) return;
+    ui.morningList.innerHTML = '';
+
+    const visibleTasks = morningTasks.filter(t => {
+        const schedule = localSchedule[`morning_${t.id}`];
         return !schedule || schedule.includes(activeDayIndex);
     });
 
-    if (visibleHabits.length === 0) {
-        ui.list.innerHTML = `<div class="empty-state">No routines for this day.</div>`;
-        updateProgressBar();
+    if (visibleTasks.length === 0) {
+        ui.morningList.innerHTML = '<div class="empty-state">No morning tasks for this day. Add some below!</div>';
+        updateMorningProgress(0, 0);
         return;
     }
 
-    visibleHabits.forEach(h => ui.list.appendChild(createHabitElement(h)));
-    updateProgressBar();
-}
-
-function createHabitElement(habit) {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const key = `${todayStr}_${habit.id}`;
-
-    const logData = localLogs[key] || { note: '', image: null };
-    const hasNote = logData.note && logData.note.trim().length > 0;
-    const hasPhoto = logData.image;
-    const hasEvidence = hasNote || hasPhoto;
-
     const template = document.getElementById('habit-card-template');
-    const clone = template.content.cloneNode(true);
-    const card = clone.querySelector('.habit-card');
+    const todayKey = todayStr;
 
-    if (habit.is_completed) card.classList.add('done');
+    visibleTasks.forEach(task => {
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.habit-card');
+        const key = `${todayKey}_morning_${task.id}`;
+        const isCompleted = localHistory[key] || false;
 
-    // Header Interactions
-    const habitMain = clone.querySelector('.habit-main');
-    habitMain.onclick = () => toggleCheck(habit.id, habit.is_completed);
+        if (isCompleted) card.classList.add('done');
 
-    // Checkbox
-    if (habit.is_completed) clone.querySelector('.check-icon').style.display = 'block';
+        // Title and checkbox
+        clone.querySelector('.habit-title').textContent = task.title;
+        if (isCompleted) clone.querySelector('.check-icon').style.display = 'block';
 
-    // Title
-    clone.querySelector('.habit-title').textContent = habit.title;
+        // Click to toggle
+        clone.querySelector('.habit-main').onclick = () => toggleMorningTask(task.id, isCompleted);
 
-    // Streak
-    const streak = calculateStreak(habit.id);
-    if (streak >= 2) {
-        const streakTmpl = document.getElementById('streak-badge-template');
-        const streakEl = streakTmpl.content.cloneNode(true);
-        streakEl.querySelector('.streak-text').textContent = `${streak} day streak`;
-        clone.querySelector('.streak-container').appendChild(streakEl);
-    }
+        // Info button
+        const infoBtn = clone.querySelector('.info-btn');
+        if (task.details) {
+            infoBtn.style.display = 'flex';
+            infoBtn.onclick = (e) => {
+                e.stopPropagation();
+                showTaskInfo(task.title, task.details);
+            };
+        }
 
-    // Log Indicators
-    const logInd = clone.querySelector('.log-indicator');
-    logInd.title = `Note: ${hasNote ? 'Yes' : 'No'} | Photo: ${hasPhoto ? 'Yes' : 'No'}`;
-    if (hasNote) clone.querySelector('.log-dot.note').classList.add('active');
-    if (hasPhoto) clone.querySelector('.log-dot.photo').classList.add('active');
+        // Check for predefined task details
+        const taskKey = task.title.toLowerCase().replace(/\s+/g, '_');
+        if (taskDetails[taskKey]) {
+            infoBtn.style.display = 'flex';
+            infoBtn.onclick = (e) => {
+                e.stopPropagation();
+                showTaskInfo(taskDetails[taskKey].title, taskDetails[taskKey].content);
+            };
+        }
 
-    // Action Button
-    const actionBtn = clone.querySelector('.action-btn');
-    if (hasEvidence) {
-        actionBtn.classList.add('active');
-        actionBtn.querySelector('.btn-text').textContent = 'View';
-    }
-    actionBtn.onclick = function () { toggleDetails(this) };
+        // Hide log indicator and action btn (not needed for morning routine)
+        clone.querySelector('.log-indicator').style.display = 'none';
+        clone.querySelector('.action-btn').style.display = 'none';
+        clone.querySelector('.habit-details').remove();
 
-    // Details Content
-    const details = clone.querySelector('.habit-details');
-    if (hasEvidence) details.classList.add('open');
+        // Streak calculation
+        const streak = calculateStreak(`morning_${task.id}`);
+        if (streak >= 2) {
+            const streakTmpl = document.getElementById('streak-badge-template');
+            const streakEl = streakTmpl.content.cloneNode(true);
+            streakEl.querySelector('.streak-text').textContent = `${streak} day streak`;
+            clone.querySelector('.streak-container').appendChild(streakEl);
+        }
 
-    // Note Textarea
-    const textarea = clone.querySelector('.detail-textarea');
-    textarea.value = logData.note;
-    textarea.onchange = (e) => saveLog(key, 'note', e.target.value);
+        ui.morningList.appendChild(card);
+    });
 
-    // Image Upload
-    const fileInput = clone.querySelector('.file-input');
-    const uploadBox = clone.querySelector('.upload-box');
-    const imgPreview = clone.querySelector('.preview-img');
-
-    uploadBox.onclick = () => fileInput.click();
-    fileInput.onchange = function () { handleImage(key, this) };
-    imgPreview.id = `img-${key}`;
-
-    if (logData.image) {
-        imgPreview.src = logData.image;
-        imgPreview.classList.add('visible');
-    }
-
-    // Delete Button
-    const deleteBtn = clone.querySelector('.delete-btn');
-    deleteBtn.onclick = () => deleteHabit(habit.id);
-
-    return card;
+    const completed = visibleTasks.filter(t => localHistory[`${todayKey}_morning_${t.id}`]).length;
+    updateMorningProgress(completed, visibleTasks.length);
 }
 
-async function deleteHabit(id) {
-    // 1. Double Confirmation
-    const confirmed = confirm("⚠️ Are you sure you want to delete this routine?\n\nThis will remove it from your schedule and delete it from your history permanently.");
-    if (!confirmed) return;
+function toggleMorningTask(id, currentStatus) {
+    const key = `${todayStr}_morning_${id}`;
+    if (currentStatus) {
+        delete localHistory[key];
+    } else {
+        localHistory[key] = true;
+    }
+    setLocal('focus_history', localHistory);
+    renderMorningList();
+}
 
-    // 2. Optimistic UI Removal (Backup first)
-    const previousHabits = [...habits];
-    const previousSchedule = localSchedule[id] ? [...localSchedule[id]] : null;
+function updateMorningProgress(completed, total) {
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const percentEl = document.getElementById('morning-progress-percent');
+    const fillEl = document.getElementById('morning-progress-fill');
+    if (percentEl) percentEl.textContent = `${percent}%`;
+    if (fillEl) fillEl.style.width = `${percent}%`;
+}
 
-    habits = habits.filter(h => h.id != id);
-    renderList();
+async function addMorningTask() {
+    const title = document.getElementById('new-morning-task').value.trim();
+    const details = document.getElementById('new-task-details').value.trim();
+    const selectedDays = [];
 
-    // 3. Remove from Local Storage (Cleanup)
-    if (localSchedule[id]) {
-        delete localSchedule[id];
+    document.querySelectorAll('#morning-day-toggles .day-btn.selected').forEach(btn => {
+        selectedDays.push(parseInt(btn.dataset.day));
+    });
+
+    if (!title || selectedDays.length === 0) {
+        return alert('Enter a task name and select days.');
+    }
+
+    const { data, error } = await sb.from('morning_tasks').insert([{
+        title,
+        details: details || null,
+        user_id: user.id
+    }]).select().single();
+
+    if (data) {
+        localSchedule[`morning_${data.id}`] = selectedDays;
         setLocal('focus_schedule_days', localSchedule);
-    }
-
-    // 4. Remove from Supabase
-    try {
-        const { error, data } = await sb.from('habits').delete().eq('id', id).eq('user_id', user.id).select();
-
-        if (error) {
-            throw new Error(error.message || 'Database error');
-        }
-
-        // Success - habit deleted from database
-        console.log("Habit deleted successfully:", data);
-
-    } catch (err) {
-        // Rollback on any error
-        console.error("Delete failed:", err);
-        alert(`Unable to delete routine: ${err.message}`);
-
-        habits = previousHabits;
-        if (previousSchedule) {
-            localSchedule[id] = previousSchedule;
-            setLocal('focus_schedule_days', localSchedule);
-        }
-        renderList();
+        morningTasks.push(data);
+        document.getElementById('new-morning-task').value = '';
+        document.getElementById('new-task-details').value = '';
+        document.querySelectorAll('#morning-day-toggles .day-btn').forEach(b => b.classList.remove('selected'));
+        renderMorningList();
+    } else if (error) {
+        console.error('Error adding task:', error);
+        alert('Error adding task');
     }
 }
 
-// --- LOGGING ---
-function toggleDetails(btn) {
-    const details = btn.parentElement.nextElementSibling;
-    details.classList.toggle('open');
+// --- POMODORO ---
+async function loadTodayPomodoros() {
+    const { data } = await sb.from('pomodoros').select('*')
+        .eq('user_id', user.id)
+        .eq('date', todayStr)
+        .order('time', { ascending: true });
+
+    if (data) pomodoros = data;
+    renderPomodoros();
 }
 
-function handleImage(key, input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            document.getElementById(`img-${key}`).src = e.target.result;
-            document.getElementById(`img-${key}`).classList.add('visible');
-            saveLog(key, 'image', e.target.result);
-        }
-        reader.readAsDataURL(input.files[0]);
+function renderPomodoros() {
+    if (!ui.pomoList) return;
+    ui.pomoList.innerHTML = '';
+
+    if (pomodoros.length === 0) {
+        ui.pomoList.innerHTML = '<div class="empty-state">No pomodoros logged today. Start logging below!</div>';
+    } else {
+        const template = document.getElementById('pomodoro-card-template');
+        pomodoros.forEach(pomo => {
+            const clone = template.content.cloneNode(true);
+            clone.querySelector('.pomo-time-display').textContent = pomo.time || '--:--';
+            clone.querySelector('.pomo-tag-badge').textContent = pomo.tag;
+            clone.querySelector('.pomo-notes').textContent = pomo.notes || '';
+            clone.querySelector('.delete-pomo-btn').onclick = () => deletePomodoro(pomo.id);
+            ui.pomoList.appendChild(clone);
+        });
+    }
+
+    updatePomoProgress();
+}
+
+function updatePomoProgress() {
+    const count = pomodoros.length;
+    const target = 16; // Typical full work day in 30-min blocks
+    const countEl = document.getElementById('pomodoro-count');
+    const fillEl = document.getElementById('work-progress-fill');
+    if (countEl) countEl.textContent = `${count}/${target}`;
+    if (fillEl) fillEl.style.width = `${Math.min((count / target) * 100, 100)}%`;
+}
+
+async function addPomodoro() {
+    const time = document.getElementById('pomo-time').value;
+    const tag = document.getElementById('pomo-tag').value;
+    const notes = document.getElementById('pomo-notes').value.trim();
+
+    if (!time) return alert('Please enter a time for this pomodoro.');
+
+    const { data, error } = await sb.from('pomodoros').insert([{
+        user_id: user.id,
+        date: todayStr,
+        time,
+        tag,
+        notes: notes || null
+    }]).select().single();
+
+    if (data) {
+        pomodoros.push(data);
+        document.getElementById('pomo-time').value = '';
+        document.getElementById('pomo-notes').value = '';
+        renderPomodoros();
+    } else if (error) {
+        console.error('Error adding pomodoro:', error);
+        alert('Error adding pomodoro');
     }
 }
 
-function saveLog(key, field, value) {
-    if (!localLogs[key]) localLogs[key] = { note: '', image: null };
-    localLogs[key][field] = value;
-    try { setLocal('focus_logs', localLogs); } catch (e) { alert("Storage full"); }
+async function deletePomodoro(id) {
+    const { error } = await sb.from('pomodoros').delete().eq('id', id);
+    if (!error) {
+        pomodoros = pomodoros.filter(p => p.id !== id);
+        renderPomodoros();
+    }
+}
+
+// --- MEALS & WATER ---
+async function loadTodayMeals() {
+    const { data } = await sb.from('meals').select('*')
+        .eq('user_id', user.id)
+        .eq('date', todayStr)
+        .order('time', { ascending: true });
+
+    if (data) meals = data;
+    renderMeals();
+}
+
+async function loadTodayWater() {
+    const { data } = await sb.from('water_logs').select('*')
+        .eq('user_id', user.id)
+        .eq('date', todayStr)
+        .single();
+
+    if (data) waterCount = data.count || 0;
+    renderWaterCount();
+}
+
+function renderMealsView() {
+    renderMeals();
+    renderWaterCount();
+}
+
+function renderMeals() {
+    if (!ui.mealsList) return;
+    ui.mealsList.innerHTML = '';
+
+    if (meals.length === 0) {
+        ui.mealsList.innerHTML = '<div class="empty-state">No meals logged today.</div>';
+        return;
+    }
+
+    const template = document.getElementById('meal-card-template');
+    meals.forEach(meal => {
+        const clone = template.content.cloneNode(true);
+        clone.querySelector('.meal-type-badge').textContent = meal.meal_type;
+        clone.querySelector('.meal-time-display').textContent = meal.time || '';
+        clone.querySelector('.meal-description').textContent = meal.description || '';
+
+        if (meal.photo) {
+            const photo = clone.querySelector('.meal-photo');
+            photo.src = meal.photo;
+            photo.style.display = 'block';
+        }
+
+        clone.querySelector('.delete-meal-btn').onclick = () => deleteMeal(meal.id);
+        ui.mealsList.appendChild(clone);
+    });
+}
+
+function renderWaterCount() {
+    const countEl = document.getElementById('water-count');
+    const barEl = document.getElementById('water-bar');
+    const target = 8;
+
+    if (countEl) countEl.textContent = waterCount;
+    if (barEl) barEl.style.width = `${Math.min((waterCount / target) * 100, 100)}%`;
+}
+
+async function addWater() {
+    waterCount++;
+    renderWaterCount();
+
+    // Upsert to database
+    const { error } = await sb.from('water_logs').upsert({
+        user_id: user.id,
+        date: todayStr,
+        count: waterCount
+    }, { onConflict: 'user_id,date' });
+
+    if (error) {
+        console.error('Error saving water count:', error);
+    }
+}
+
+async function addMeal() {
+    const mealType = document.getElementById('meal-type').value;
+    const time = document.getElementById('meal-time').value;
+    const description = document.getElementById('meal-description').value.trim();
+    const photoEl = document.getElementById('meal-preview');
+    const photo = photoEl.src && photoEl.style.display !== 'none' ? photoEl.src : null;
+
+    if (!mealType) return alert('Please select a meal type');
+
+    const { data, error } = await sb.from('meals').insert([{
+        user_id: user.id,
+        date: todayStr,
+        meal_type: mealType,
+        time: time || null,
+        description: description || null,
+        photo
+    }]).select().single();
+
+    if (data) {
+        meals.push(data);
+        document.getElementById('meal-description').value = '';
+        document.getElementById('meal-time').value = '';
+        document.getElementById('meal-preview').src = '';
+        document.getElementById('meal-preview').style.display = 'none';
+        renderMeals();
+    } else if (error) {
+        console.error('Error adding meal:', error);
+        alert('Error adding meal');
+    }
+}
+
+async function deleteMeal(id) {
+    const { error } = await sb.from('meals').delete().eq('id', id);
+    if (!error) {
+        meals = meals.filter(m => m.id !== id);
+        renderMeals();
+    }
+}
+
+// --- TASK INFO MODAL ---
+function showTaskInfo(title, content) {
+    document.getElementById('info-modal-title').textContent = title;
+    document.getElementById('info-modal-content').innerHTML = content;
+    ui.infoModal.classList.add('active');
+}
+
+function closeInfoModal() {
+    ui.infoModal.classList.remove('active');
+}
+
+// --- STREAK CALCULATION ---
+function calculateStreak(habitId) {
+    let streak = 0;
+    const today = new Date();
+
+    for (let i = 0; i < 365; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() - i);
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const key = `${dateStr}_${habitId}`;
+
+        if (localHistory[key]) {
+            streak++;
+        } else if (i > 0) {
+            break;
+        }
+    }
+    return streak;
 }
 
 // --- STATS & EXPORT ---
 function openStats() {
     ui.statsModal.classList.add('active');
-    switchTab('week'); // Default view
+    switchTab('week');
 }
 
 function closeStats() {
@@ -371,25 +737,20 @@ function renderCalendar(view) {
 
     // Calculate summary stats
     const totalCompletions = Object.keys(localHistory).length;
-    const bestStreak = habits.reduce((max, h) => Math.max(max, calculateStreak(h.id)), 0);
+    const bestStreak = morningTasks.reduce((max, t) => Math.max(max, calculateStreak(`morning_${t.id}`)), 0);
     const activeDays = new Set(Object.keys(localHistory).map(k => k.split('_')[0])).size;
 
-    // Use Template for Summary
     const summaryTmpl = document.getElementById('stats-summary-template');
     const summaryClone = summaryTmpl.content.cloneNode(true);
     summaryClone.querySelector('.total-done').textContent = totalCompletions;
     summaryClone.querySelector('.best-streak').textContent = bestStreak;
     summaryClone.querySelector('.active-days').textContent = activeDays;
-
     ui.statsContent.appendChild(summaryClone);
 
-    // WEEK VIEW
     if (view === 'week') {
         let html = '<div class="calendar-grid">';
-        // Headers
         ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(d => html += `<div class="cal-day header">${d}</div>`);
 
-        // Last 7 days
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
             d.setDate(today.getDate() - i);
@@ -402,15 +763,13 @@ function renderCalendar(view) {
                 ${dayCount > 0 ? `<span class="day-count-badge">${dayCount}✓</span>` : ''}
             </div>`;
         }
-        html += `</div><p class="graph-caption">Past 7 Days Activity</p>`;
+        html += '</div><p class="graph-caption">Past 7 Days Activity</p>';
 
-        // Append grid to content
         const div = document.createElement('div');
         div.innerHTML = html;
         ui.statsContent.appendChild(div);
     }
 
-    // MONTH VIEW
     if (view === 'month') {
         const year = today.getFullYear();
         const month = today.getMonth();
@@ -420,17 +779,14 @@ function renderCalendar(view) {
         let html = `<h4 style="text-align:center; margin-bottom:10px;">${today.toLocaleString('default', { month: 'long' })}</h4>`;
         html += '<div class="calendar-grid">';
 
-        // Empty slots for start of month
         for (let i = 0; i < firstDay.getDay(); i++) {
             html += '<div class="cal-day"></div>';
         }
 
-        // Days
         for (let i = 1; i <= lastDay.getDate(); i++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
             const dayCount = countActivity(dateStr);
-            const hasActivity = dayCount > 0;
-            html += `<div class="cal-day ${hasActivity ? 'active' : ''}" title="${dayCount} completed">${i}</div>`;
+            html += `<div class="cal-day ${dayCount > 0 ? 'active' : ''}" title="${dayCount} completed">${i}</div>`;
         }
         html += '</div>';
 
@@ -439,10 +795,8 @@ function renderCalendar(view) {
         ui.statsContent.appendChild(div);
     }
 
-    // YEAR VIEW (Heatmap style)
     if (view === 'year') {
         let html = '<div class="heatmap-grid">';
-        // Visualize 12 months as simple colored blocks for density
         for (let m = 0; m < 12; m++) {
             const monthName = new Date(2024, m).toLocaleString('default', { month: 'short' });
             let count = 0;
@@ -458,7 +812,7 @@ function renderCalendar(view) {
                 ${monthName}
             </div>`;
         }
-        html += `</div><p class="graph-caption">Monthly Activity Density</p>`;
+        html += '</div><p class="graph-caption">Monthly Activity Density</p>';
 
         const div = document.createElement('div');
         div.innerHTML = html;
@@ -467,20 +821,16 @@ function renderCalendar(view) {
 }
 
 function countActivity(dateStr) {
-    // Count how many habits were done on this date
     return Object.keys(localHistory).filter(key => key.startsWith(dateStr)).length;
-}
-
-function checkActivity(dateStr) {
-    // Check if ANY habit was done on this date
-    // localHistory keys are "YYYY-MM-DD_habitId"
-    return Object.keys(localHistory).some(key => key.startsWith(dateStr));
 }
 
 function exportData() {
     const data = {
         exportedAt: new Date(),
-        habits: habits,
+        morningTasks,
+        pomodoros,
+        meals,
+        waterCount,
         schedules: localSchedule,
         history: localHistory,
         logs: localLogs
@@ -489,7 +839,7 @@ function exportData() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "focus_backup.json");
+    downloadAnchor.setAttribute("download", "routine_backup.json");
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

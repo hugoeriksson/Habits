@@ -623,3 +623,542 @@ button.secondary:hover {
     justify-content: center;
     font-weight: 600;
 }
+
+/* ============================================
+   BOTTOM NAVIGATION
+   ============================================ */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 8px;
+    margin-bottom: 16px;
+    position: sticky;
+    top: 10px;
+    z-index: 50;
+}
+
+.nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+    font-size: 0.7rem;
+}
+
+.nav-btn:hover {
+    background: var(--bg-glass);
+    color: var(--text-primary);
+}
+
+.nav-btn.active {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+}
+
+/* ============================================
+   APP VIEWS
+   ============================================ */
+.app-view {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.app-view.active {
+    display: block;
+}
+
+/* ============================================
+   CHECK-IN STYLES
+   ============================================ */
+.checkin-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+/* Mood Slider */
+.mood-slider-container {
+    padding: 0 10px;
+}
+
+.mood-slider {
+    width: 100%;
+    height: 8px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+    border-radius: 4px;
+    outline: none;
+    margin-bottom: 8px;
+}
+
+.mood-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 3px solid var(--accent-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mood-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 3px solid var(--accent-primary);
+}
+
+.mood-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.mood-current {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+/* Sleep Input */
+.sleep-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.sleep-input-row label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    min-width: 90px;
+}
+
+.sleep-input-row input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.sleep-input-row.dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.sleep-input-row.dual>div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sleep-input-row.dual label {
+    min-width: auto;
+}
+
+.sleep-stages {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.sleep-stage {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px;
+}
+
+.sleep-stage label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.time-input-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.time-input-group input {
+    width: 45px;
+    padding: 8px;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.time-input-group span {
+    color: var(--text-secondary);
+}
+
+/* Winddown Checklist */
+.checkin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.winddown-item {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    transition: 0.2s;
+}
+
+.winddown-item:hover {
+    border-color: var(--accent-primary);
+}
+
+.winddown-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.winddown-check {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent-success);
+}
+
+.winddown-title {
+    font-size: 0.9rem;
+}
+
+/* ============================================
+   WATER TRACKER
+   ============================================ */
+.water-tracker {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.water-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.water-icon {
+    font-size: 2rem;
+}
+
+.water-count {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #3b82f6;
+}
+
+.water-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.water-progress {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.water-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.water-btn {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    border: none;
+    color: white;
+    padding: 14px 32px;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.water-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+.water-btn:active {
+    transform: scale(0.98);
+}
+
+/* ============================================
+   POMODORO STYLES
+   ============================================ */
+.pomodoro-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+.pomo-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+}
+
+.pomo-time-display {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    min-width: 50px;
+}
+
+.pomo-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pomo-tag-badge {
+    background: var(--accent-secondary);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.pomo-notes {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.delete-pomo-btn,
+.delete-meal-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.delete-pomo-btn:hover,
+.delete-meal-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.pomodoro-input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.pomo-time-input {
+    flex: 1;
+}
+
+.pomo-tag-select {
+    flex: 2;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+    padding: 12px;
+}
+
+.pomo-tag-select option {
+    background: #1f1f2e;
+}
+
+/* ============================================
+   MEALS STYLES
+   ============================================ */
+.meals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+.meal-card {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.meal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.meal-type-badge {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.meal-time-display {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.meal-description {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.meal-photo {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.meal-input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.meal-type-select {
+    flex: 1;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+    padding: 12px;
+}
+
+.meal-type-select option {
+    background: #1f1f2e;
+}
+
+.meal-time-input {
+    flex: 1;
+}
+
+.meal-desc {
+    width: 100%;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+    padding: 12px;
+    font-family: inherit;
+    resize: none;
+    margin-bottom: 12px;
+}
+
+/* ============================================
+   INFO BUTTON
+   ============================================ */
+.info-btn {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-right: 8px;
+}
+
+.info-btn:hover {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Info Modal Content */
+#info-modal-content {
+    margin-bottom: 20px;
+}
+
+#info-modal-content h4 {
+    color: var(--accent-primary);
+    margin: 16px 0 8px;
+}
+
+#info-modal-content p {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+#info-modal-content ul {
+    margin-left: 20px;
+    color: var(--text-secondary);
+}
+
+#info-modal-content li {
+    margin-bottom: 4px;
+}
+
+/* ============================================
+   LOGOUT TEXT
+   ============================================ */
+.logout-text {
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+
+.logout-text:hover {
+    color: #f87171;
+}
