@@ -241,7 +241,6 @@ function showAuth() {
 // --- DATA LOADING ---
 async function loadAllData() {
     await Promise.all([
-        loadMorningTasks(),
         loadTodayCheckin(),
         loadTodayPomodoros(),
         loadTodayMeals(),
@@ -355,65 +354,52 @@ async function saveCheckin() {
     }
 }
 
+// Morning routine items (hardcoded)
+const morningItems = [
+    '20:00 No screens, dim lights',
+    '20:00-20:45 Light reading',
+    '20:45-20:55 Brush teeth + wash face',
+    '21:00-21:10 meditation',
+    '21:10-21:25 stretching',
+    '21:25 In bed'
+];
+
 // --- MORNING ROUTINE ---
-async function loadMorningTasks() {
-    const { data } = await sb.from('morning_tasks').select('*')
-        .eq('user_id', user.id)
-        .order('id', { ascending: true });
-    if (data) morningTasks = data;
-    renderMorningList();
-}
+// (No longer loading from DB)
 
 function renderMorningList() {
     if (!ui.morningList) return;
     ui.morningList.innerHTML = '';
 
-    const visibleTasks = morningTasks.filter(t => {
-        const schedule = localSchedule[`morning_${t.id}`];
-        return !schedule || schedule.includes(activeDayIndex);
-    });
-
-    if (visibleTasks.length === 0) {
-        ui.morningList.innerHTML = '<div class="empty-state">No morning tasks for this day. Add some below!</div>';
-        updateMorningProgress(0, 0);
-        return;
-    }
-
     const template = document.getElementById('habit-card-template');
     const todayKey = todayStr;
 
-    visibleTasks.forEach(task => {
+    morningItems.forEach((title, idx) => {
         const clone = template.content.cloneNode(true);
         const card = clone.querySelector('.habit-card');
-        const key = `${todayKey}_morning_${task.id}`;
+
+        // Use index-based ID for hardcoded items, or slug
+        const id = title.toLowerCase().replace(/\s+/g, '_');
+        const key = `${todayKey}_morning_${id}`;
         const isCompleted = localHistory[key] || false;
 
         if (isCompleted) card.classList.add('done');
 
         // Title and checkbox
-        clone.querySelector('.habit-title').textContent = task.title;
+        clone.querySelector('.habit-title').textContent = title;
         if (isCompleted) clone.querySelector('.check-icon').style.display = 'block';
 
         // Click to toggle
-        clone.querySelector('.habit-main').onclick = () => toggleMorningTask(task.id, isCompleted);
+        clone.querySelector('.habit-main').onclick = () => toggleMorningTask(id, isCompleted);
 
         // Info button
         const infoBtn = clone.querySelector('.info-btn');
-        if (task.details) {
-            infoBtn.style.display = 'flex';
-            infoBtn.onclick = (e) => {
-                e.stopPropagation();
-                showTaskInfo(task.title, task.details);
-            };
-        }
-
         // Check for predefined task details
-        const taskKey = task.title.toLowerCase().replace(/\s+/g, '_');
-        if (taskDetails[taskKey]) {
+        if (taskDetails[id]) {
             infoBtn.style.display = 'flex';
             infoBtn.onclick = (e) => {
                 e.stopPropagation();
-                showTaskInfo(taskDetails[taskKey].title, taskDetails[taskKey].content);
+                showTaskInfo(taskDetails[id].title, taskDetails[id].content);
             };
         }
 
@@ -423,7 +409,7 @@ function renderMorningList() {
         clone.querySelector('.habit-details').remove();
 
         // Streak calculation
-        const streak = calculateStreak(`morning_${task.id}`);
+        const streak = calculateStreak(`morning_${id}`);
         if (streak >= 2) {
             const streakTmpl = document.getElementById('streak-badge-template');
             const streakEl = streakTmpl.content.cloneNode(true);
@@ -434,8 +420,12 @@ function renderMorningList() {
         ui.morningList.appendChild(card);
     });
 
-    const completed = visibleTasks.filter(t => localHistory[`${todayKey}_morning_${t.id}`]).length;
-    updateMorningProgress(completed, visibleTasks.length);
+    const completed = morningItems.filter(t => {
+        const id = t.toLowerCase().replace(/\s+/g, '_');
+        return localHistory[`${todayKey}_morning_${id}`];
+    }).length;
+
+    updateMorningProgress(completed, morningItems.length);
 }
 
 function toggleMorningTask(id, currentStatus) {
@@ -455,39 +445,6 @@ function updateMorningProgress(completed, total) {
     const fillEl = document.getElementById('morning-progress-fill');
     if (percentEl) percentEl.textContent = `${percent}%`;
     if (fillEl) fillEl.style.width = `${percent}%`;
-}
-
-async function addMorningTask() {
-    const title = document.getElementById('new-morning-task').value.trim();
-    const details = document.getElementById('new-task-details').value.trim();
-    const selectedDays = [];
-
-    document.querySelectorAll('#morning-day-toggles .day-btn.selected').forEach(btn => {
-        selectedDays.push(parseInt(btn.dataset.day));
-    });
-
-    if (!title || selectedDays.length === 0) {
-        return alert('Enter a task name and select days.');
-    }
-
-    const { data, error } = await sb.from('morning_tasks').insert([{
-        title,
-        details: details || null,
-        user_id: user.id
-    }]).select().single();
-
-    if (data) {
-        localSchedule[`morning_${data.id}`] = selectedDays;
-        setLocal('focus_schedule_days', localSchedule);
-        morningTasks.push(data);
-        document.getElementById('new-morning-task').value = '';
-        document.getElementById('new-task-details').value = '';
-        document.querySelectorAll('#morning-day-toggles .day-btn').forEach(b => b.classList.remove('selected'));
-        renderMorningList();
-    } else if (error) {
-        console.error('Error adding task:', error);
-        alert('Error adding task');
-    }
 }
 
 // --- POMODORO ---
