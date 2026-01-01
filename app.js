@@ -354,14 +354,25 @@ async function saveCheckin() {
     }
 }
 
-// Morning routine items (hardcoded)
+// Morning routine items (hardcoded with schedule)
+// Days: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
 const morningItems = [
-    '20:00 No screens, dim lights',
-    '20:00-20:45 Light reading',
-    '20:45-20:55 Brush teeth + wash face',
-    '21:00-21:10 meditation',
-    '21:10-21:25 stretching',
-    '21:25 In bed'
+    { title: 'Wake up (6:30)', days: [0, 1, 2, 3, 4, 5, 6] },
+    { title: 'Light Therapy (6:35-6:55)', days: [0, 1, 2, 3, 4, 5, 6] },
+
+    // --- WORKOUTS (All days except Tue) ---
+    { title: 'Workout A: 4x4 Intervals + Shower (6:55-8:00)', days: [0] },      // Mon
+    { title: 'Workout C: Calisthenics + Shower (6:55-8:00)', days: [2, 4] },    // Wed, Fri
+    { title: 'Workout B: Zone 2 Run + Shower (6:55-8:00)', days: [3, 5] },      // Thu, Sat
+    { title: 'Active Recovery: Zone 2 Cardio + Shower (6:55-8:00)', days: [6] }, // Sun
+
+    // --- TUESDAY ROUTINE (Rest Day) ---
+    { title: 'Breakfast (6:55-7:20)', days: [1] },
+    { title: 'Wash face + brush teeth (7:20-7:25)', days: [1] },
+
+    // --- STANDARD ROUTINE (All days except Tue) ---
+    { title: 'Breakfast (8:00-8:20)', days: [0, 2, 3, 4, 5, 6] },
+    { title: 'Brush teeth (8:20-8:25)', days: [0, 2, 3, 4, 5, 6] }
 ];
 
 // --- MORNING ROUTINE ---
@@ -371,14 +382,24 @@ function renderMorningList() {
     if (!ui.morningList) return;
     ui.morningList.innerHTML = '';
 
+    // Filter tasks for the active day
+    const visibleItems = morningItems.filter(item => item.days.includes(activeDayIndex));
+
+    if (visibleItems.length === 0) {
+        ui.morningList.innerHTML = '<div class="empty-state">No tasks scheduled for today. Enjoy!</div>';
+        updateMorningProgress(0, 0);
+        return;
+    }
+
     const template = document.getElementById('habit-card-template');
     const todayKey = todayStr;
 
-    morningItems.forEach((title, idx) => {
+    visibleItems.forEach((item) => {
+        const title = item.title;
         const clone = template.content.cloneNode(true);
         const card = clone.querySelector('.habit-card');
 
-        // Use index-based ID for hardcoded items, or slug
+        // Use slug for ID
         const id = title.toLowerCase().replace(/\s+/g, '_');
         const key = `${todayKey}_morning_${id}`;
         const isCompleted = localHistory[key] || false;
@@ -420,12 +441,12 @@ function renderMorningList() {
         ui.morningList.appendChild(card);
     });
 
-    const completed = morningItems.filter(t => {
-        const id = t.toLowerCase().replace(/\s+/g, '_');
+    const completed = visibleItems.filter(item => {
+        const id = item.title.toLowerCase().replace(/\s+/g, '_');
         return localHistory[`${todayKey}_morning_${id}`];
     }).length;
 
-    updateMorningProgress(completed, morningItems.length);
+    updateMorningProgress(completed, visibleItems.length);
 }
 
 function toggleMorningTask(id, currentStatus) {
