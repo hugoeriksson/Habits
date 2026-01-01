@@ -138,7 +138,7 @@ function showAuth() { ui.appScreen.classList.remove('visible'); ui.authScreen.cl
 
 // --- HABITS ---
 async function loadHabits() {
-    ui.list.innerHTML = '<div style="text-align:center; opacity:0.7">Loading...</div>';
+    ui.list.innerHTML = '<div class="loading-indicator">Loading...</div>';
     const { data } = await sb.from('habits').select('*').eq('user_id', user.id).order('id', { ascending: true });
     if (data) { habits = data; renderList(); }
 }
@@ -163,7 +163,7 @@ async function addHabit() {
 
 async function toggleCheck(id, currentStatus) {
     const newStatus = !currentStatus;
-    const idx = habits.findIndex(h => h.id === id);
+    const idx = habits.findIndex(h => h.id == id);
     if (idx > -1) habits[idx].is_completed = newStatus;
 
     // 1. Render UI immediately
@@ -195,7 +195,7 @@ function renderList() {
     });
 
     if (visibleHabits.length === 0) {
-        ui.list.innerHTML = `<div style="text-align:center; padding: 30px; color: var(--text-secondary)">No routines for this day.</div>`;
+        ui.list.innerHTML = `<div class="empty-state">No routines for this day.</div>`;
         updateProgressBar();
         return;
     }
@@ -213,54 +213,73 @@ function createHabitElement(habit) {
     const hasPhoto = logData.image;
     const hasEvidence = hasNote || hasPhoto;
 
-    // Calculate streak
+    const template = document.getElementById('habit-card-template');
+    const clone = template.content.cloneNode(true);
+    const card = clone.querySelector('.habit-card');
+
+    if (habit.is_completed) card.classList.add('done');
+
+    // Header Interactions
+    const habitMain = clone.querySelector('.habit-main');
+    habitMain.onclick = () => toggleCheck(habit.id, habit.is_completed);
+
+    // Checkbox
+    if (habit.is_completed) clone.querySelector('.check-icon').style.display = 'block';
+
+    // Title
+    clone.querySelector('.habit-title').textContent = habit.title;
+
+    // Streak
     const streak = calculateStreak(habit.id);
-    const streakHTML = streak >= 2 ? `
-        <span class="streak-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 23c-3.03 0-6-1.68-6-6 0-2.12 1.2-4.17 2.4-5.83l1.2-1.47c0-.36.1-.91.1-1.4 0-1-.3-2.4-.3-3.6 0-1.1.4-2.2 1.1-3.1.3-.4.9-.5 1.3-.2.3.3.5.8.3 1.2-.5 1.5-.1 3.1 1 4.2.9.9 2.3 1.5 3.7 1.5 1.4.1 2.3.5 3.2 1.3.8.8 1.1 1.7 1.1 2.7 0 .8-.2 1.5-.5 2.2C19.5 18.1 16.84 23 12 23z"/></svg>
-            ${streak} day streak
-        </span>
-    ` : '';
+    if (streak >= 2) {
+        const streakTmpl = document.getElementById('streak-badge-template');
+        const streakEl = streakTmpl.content.cloneNode(true);
+        streakEl.querySelector('.streak-text').textContent = `${streak} day streak`;
+        clone.querySelector('.streak-container').appendChild(streakEl);
+    }
 
-    const div = document.createElement('div');
-    div.className = `habit-card ${habit.is_completed ? 'done' : ''}`;
+    // Log Indicators
+    const logInd = clone.querySelector('.log-indicator');
+    logInd.title = `Note: ${hasNote ? 'Yes' : 'No'} | Photo: ${hasPhoto ? 'Yes' : 'No'}`;
+    if (hasNote) clone.querySelector('.log-dot.note').classList.add('active');
+    if (hasPhoto) clone.querySelector('.log-dot.photo').classList.add('active');
 
-    div.innerHTML = `
-        <div class="habit-header">
-            <div class="habit-main" onclick="toggleCheck(${habit.id}, ${habit.is_completed})">
-                <div class="checkbox">
-                    ${habit.is_completed ? '<svg width="16" height="16" stroke="white" stroke-width="3" fill="none" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>' : ''}
-                </div>
-                <span class="habit-title">${habit.title}</span>
-                ${streakHTML}
-            </div>
-            <div class="log-indicator" title="Note: ${hasNote ? 'Yes' : 'No'} | Photo: ${hasPhoto ? 'Yes' : 'No'}">
-                <span class="log-dot note ${hasNote ? 'active' : ''}" title="Note"></span>
-                <span class="log-dot photo ${hasPhoto ? 'active' : ''}" title="Photo"></span>
-            </div>
-            <button class="action-btn ${hasEvidence ? 'active' : ''}" onclick="toggleDetails(this)">
-                <span>${hasEvidence ? 'View' : 'Log'}</span>
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-            </button>
-        </div>
-        <div class="habit-details ${hasEvidence ? 'open' : ''}">
-            <label class="detail-label">Note / Alternative Activity:</label>
-            <textarea class="detail-textarea" rows="2" placeholder="Did you do something else?" onchange="saveLog('${key}', 'note', this.value)">${logData.note}</textarea>
-            
-            <label class="detail-label">Evidence (Photo):</label>
-            <div class="upload-box" onclick="document.getElementById('file-${key}').click()">
-                <span style="font-size:0.8rem; color:var(--text-secondary)">Click to Upload Image</span>
-                <input type="file" id="file-${key}" hidden accept="image/*" onchange="handleImage('${key}', this)">
-                <img src="${logData.image || ''}" class="preview-img ${logData.image ? 'visible' : ''}" id="img-${key}">
-            </div>
+    // Action Button
+    const actionBtn = clone.querySelector('.action-btn');
+    if (hasEvidence) {
+        actionBtn.classList.add('active');
+        actionBtn.querySelector('.btn-text').textContent = 'View';
+    }
+    actionBtn.onclick = function () { toggleDetails(this) };
 
-            <button class="delete-btn" onclick="deleteHabit(${habit.id})">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Delete Routine Permanently
-            </button>
-        </div>
-    `;
-    return div;
+    // Details Content
+    const details = clone.querySelector('.habit-details');
+    if (hasEvidence) details.classList.add('open');
+
+    // Note Textarea
+    const textarea = clone.querySelector('.detail-textarea');
+    textarea.value = logData.note;
+    textarea.onchange = (e) => saveLog(key, 'note', e.target.value);
+
+    // Image Upload
+    const fileInput = clone.querySelector('.file-input');
+    const uploadBox = clone.querySelector('.upload-box');
+    const imgPreview = clone.querySelector('.preview-img');
+
+    uploadBox.onclick = () => fileInput.click();
+    fileInput.onchange = function () { handleImage(key, this) };
+    imgPreview.id = `img-${key}`;
+
+    if (logData.image) {
+        imgPreview.src = logData.image;
+        imgPreview.classList.add('visible');
+    }
+
+    // Delete Button
+    const deleteBtn = clone.querySelector('.delete-btn');
+    deleteBtn.onclick = () => deleteHabit(habit.id);
+
+    return card;
 }
 
 async function deleteHabit(id) {
@@ -268,8 +287,11 @@ async function deleteHabit(id) {
     const confirmed = confirm("⚠️ Are you sure you want to delete this routine?\n\nThis will remove it from your schedule and delete it from your history permanently.");
     if (!confirmed) return;
 
-    // 2. Optimistic UI Removal
-    habits = habits.filter(h => h.id !== id);
+    // 2. Optimistic UI Removal (Backup first)
+    const previousHabits = [...habits];
+    const previousSchedule = localSchedule[id] ? [...localSchedule[id]] : null;
+
+    habits = habits.filter(h => h.id != id);
     renderList();
 
     // 3. Remove from Local Storage (Cleanup)
@@ -279,11 +301,27 @@ async function deleteHabit(id) {
     }
 
     // 4. Remove from Supabase
-    const { error } = await sb.from('habits').delete().eq('id', id);
+    try {
+        const { error, data } = await sb.from('habits').delete().eq('id', id).eq('user_id', user.id).select();
 
-    if (error) {
-        alert("Error deleting from database. Please refresh.");
-        loadHabits(); // Revert UI if failed
+        if (error) {
+            throw new Error(error.message || 'Database error');
+        }
+
+        // Success - habit deleted from database
+        console.log("Habit deleted successfully:", data);
+
+    } catch (err) {
+        // Rollback on any error
+        console.error("Delete failed:", err);
+        alert(`Unable to delete routine: ${err.message}`);
+
+        habits = previousHabits;
+        if (previousSchedule) {
+            localSchedule[id] = previousSchedule;
+            setLocal('focus_schedule_days', localSchedule);
+        }
+        renderList();
     }
 }
 
@@ -336,27 +374,18 @@ function renderCalendar(view) {
     const bestStreak = habits.reduce((max, h) => Math.max(max, calculateStreak(h.id)), 0);
     const activeDays = new Set(Object.keys(localHistory).map(k => k.split('_')[0])).size;
 
-    // Summary boxes at top
-    let summaryHTML = `
-        <div class="stat-summary">
-            <div class="stat-box">
-                <div class="stat-value">${totalCompletions}</div>
-                <div class="stat-label">Total Done</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">${bestStreak}</div>
-                <div class="stat-label">Best Streak</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">${activeDays}</div>
-                <div class="stat-label">Active Days</div>
-            </div>
-        </div>
-    `;
+    // Use Template for Summary
+    const summaryTmpl = document.getElementById('stats-summary-template');
+    const summaryClone = summaryTmpl.content.cloneNode(true);
+    summaryClone.querySelector('.total-done').textContent = totalCompletions;
+    summaryClone.querySelector('.best-streak').textContent = bestStreak;
+    summaryClone.querySelector('.active-days').textContent = activeDays;
+
+    ui.statsContent.appendChild(summaryClone);
 
     // WEEK VIEW
     if (view === 'week') {
-        let html = summaryHTML + '<div class="calendar-grid">';
+        let html = '<div class="calendar-grid">';
         // Headers
         ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(d => html += `<div class="cal-day header">${d}</div>`);
 
@@ -370,11 +399,15 @@ function renderCalendar(view) {
 
             html += `<div class="cal-day ${hasActivity ? 'active' : ''}" title="${dayCount} completed">
                 ${d.getDate()}
-                ${dayCount > 0 ? `<span style="font-size:0.6rem; display:block;">${dayCount}✓</span>` : ''}
+                ${dayCount > 0 ? `<span class="day-count-badge">${dayCount}✓</span>` : ''}
             </div>`;
         }
-        html += '</div><p style="text-align:center; font-size:0.8rem; color:var(--text-secondary)">Past 7 Days Activity</p>';
-        ui.statsContent.innerHTML = html;
+        html += `</div><p class="graph-caption">Past 7 Days Activity</p>`;
+
+        // Append grid to content
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        ui.statsContent.appendChild(div);
     }
 
     // MONTH VIEW
@@ -384,7 +417,7 @@ function renderCalendar(view) {
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
 
-        let html = summaryHTML + `<h4 style="text-align:center; margin-bottom:10px;">${today.toLocaleString('default', { month: 'long' })}</h4>`;
+        let html = `<h4 style="text-align:center; margin-bottom:10px;">${today.toLocaleString('default', { month: 'long' })}</h4>`;
         html += '<div class="calendar-grid">';
 
         // Empty slots for start of month
@@ -400,33 +433,36 @@ function renderCalendar(view) {
             html += `<div class="cal-day ${hasActivity ? 'active' : ''}" title="${dayCount} completed">${i}</div>`;
         }
         html += '</div>';
-        ui.statsContent.innerHTML = html;
+
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        ui.statsContent.appendChild(div);
     }
 
     // YEAR VIEW (Heatmap style)
     if (view === 'year') {
-        let html = summaryHTML + '<div class="heatmap-grid">';
+        let html = '<div class="heatmap-grid">';
         // Visualize 12 months as simple colored blocks for density
-        // For a simple implementation, we just show total completion count per month
         for (let m = 0; m < 12; m++) {
             const monthName = new Date(2024, m).toLocaleString('default', { month: 'short' });
-            // Count completions in this month
             let count = 0;
             Object.keys(localHistory).forEach(k => {
                 if (k.startsWith(`${today.getFullYear()}-${String(m + 1).padStart(2, '0')}`)) count++;
             });
 
-            // Calculate opacity based on activity (max 30 for visualization cap)
             const opacity = Math.min(count / 10, 1);
             const color = count > 0 ? `rgba(16, 185, 129, ${opacity || 0.1})` : 'rgba(255,255,255,0.05)';
 
-            html += `<div style="text-align:center; font-size:0.7rem;">
-                <div style="aspect-ratio:1; background:${color}; border-radius:4px; margin-bottom:4px; display:flex; align-items:center; justify-content:center; font-weight:600;">${count > 0 ? count : ''}</div>
+            html += `<div class="year-cell-wrapper">
+                <div class="year-cell-box" style="background:${color};">${count > 0 ? count : ''}</div>
                 ${monthName}
             </div>`;
         }
-        html += '</div><p style="text-align:center; margin-top:10px; font-size:0.8rem; color:var(--text-secondary)">Monthly Activity Density</p>';
-        ui.statsContent.innerHTML = html;
+        html += `</div><p class="graph-caption">Monthly Activity Density</p>`;
+
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        ui.statsContent.appendChild(div);
     }
 }
 
