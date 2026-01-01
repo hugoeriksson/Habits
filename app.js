@@ -29,11 +29,10 @@ let localLogs = getLocal('focus_logs');
 // Winddown routine items (configurable)
 const winddownItems = [
     '20:00 no screens, dim lights',
-    'Light reading.',
+    'Light reading',
     'Brush teeth + Wash face',
     'Meditation',
-    'Stretching',
-    'Prepare clothes'
+    'Stretching'
 ];
 
 // Task details for info modals
