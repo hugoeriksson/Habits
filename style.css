@@ -185,61 +185,9 @@ body {
     text-decoration: line-through;
 }
 
-/* Actions Button */
-.action-btn {
-    background: transparent;
-    border: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
 
-.action-btn:hover,
-.action-btn.active {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border-color: white;
-}
 
-/* Details Section */
-.habit-details {
-    background: rgba(0, 0, 0, 0.2);
-    border-top: 1px solid var(--border-subtle);
-    padding: 0 16px;
-    max-height: 0;
-    overflow: hidden;
-    transition: 0.3s ease;
-}
 
-.habit-details.open {
-    padding: 16px;
-    max-height: 500px;
-}
-
-.detail-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-    display: block;
-}
-
-.detail-textarea {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-subtle);
-    border-radius: 8px;
-    color: white;
-    padding: 10px;
-    font-family: inherit;
-    margin-bottom: 12px;
-    resize: none;
-}
 
 .upload-box {
     border: 2px dashed var(--border-subtle);
@@ -502,55 +450,9 @@ button.secondary:hover {
     height: 12px;
 }
 
-/* Log Indicator */
-.log-indicator {
-    display: flex;
-    gap: 6px;
-    margin-left: auto;
-    margin-right: 10px;
-}
 
-.log-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    opacity: 0.3;
-}
 
-.log-dot.active {
-    opacity: 1;
-}
 
-.log-dot.note {
-    background: var(--accent-primary);
-}
-
-.log-dot.photo {
-    background: var(--accent-secondary);
-}
-
-/* Delete Button */
-.delete-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 12px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #f87171;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    width: 100%;
-    justify-content: center;
-    transition: 0.2s;
-}
-
-.delete-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: #f87171;
-}
 
 /* Stats Enhancements */
 .stat-summary {
@@ -1161,4 +1063,418 @@ button.secondary:hover {
 
 .logout-text:hover {
     color: #f87171;
+}
+
+/* ============================================
+   DAY TABS (Week Planning & Meal Planning)
+   ============================================ */
+.day-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: var(--bg-glass);
+    padding: 4px;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+}
+
+.day-tab {
+    flex: 1;
+    min-width: 40px;
+    padding: 10px 8px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.day-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.day-tab.active {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+}
+
+.day-tab.today {
+    border: 2px solid var(--accent-success);
+}
+
+/* Week Label */
+.week-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   WEEKLY TASKS
+   ============================================ */
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+.weekly-task-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    transition: all 0.2s;
+}
+
+.weekly-task-card:hover {
+    border-color: var(--accent-primary);
+}
+
+.weekly-task-card.completed {
+    opacity: 0.6;
+    background: rgba(16, 185, 129, 0.05);
+    border-color: var(--accent-success);
+}
+
+.weekly-task-card.completed .task-title {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+
+.weekly-task-card.completed .checkbox {
+    background: var(--accent-success);
+    border-color: var(--accent-success);
+}
+
+.weekly-task-card.completed .check-icon {
+    display: block !important;
+}
+
+.task-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    cursor: pointer;
+}
+
+.task-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.task-description {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Priority Badges */
+.priority-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-badge.normal {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--accent-primary);
+}
+
+.priority-badge.high {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.priority-badge.urgent {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    animation: urgentPulse 2s infinite;
+}
+
+@keyframes urgentPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.delete-task-btn,
+.delete-meal-plan-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.delete-task-btn:hover,
+.delete-meal-plan-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+/* Task Input Styles */
+.task-input,
+.meal-name-input,
+.notes-input {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+    margin-bottom: 12px;
+}
+
+.task-desc {
+    width: 100%;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+    padding: 12px;
+    font-family: inherit;
+    resize: none;
+    margin-bottom: 12px;
+}
+
+.priority-select-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.priority-select-row label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.priority-select {
+    flex: 1;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+    padding: 10px 12px;
+}
+
+.priority-select option {
+    background: #1f1f2e;
+}
+
+/* ============================================
+   MEAL PLANNING / RECIPES
+   ============================================ */
+.meal-plan-day-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+.meal-plan-card {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.meal-plan-card:hover {
+    border-color: var(--accent-primary);
+}
+
+.meal-plan-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.meal-plan-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.expand-recipe-btn {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.expand-recipe-btn:hover {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.expand-recipe-btn.expanded {
+    transform: rotate(180deg);
+}
+
+.meal-plan-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.prep-time {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.prep-time::before {
+    content: "⏱️";
+}
+
+.meal-plan-details {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+
+.ingredients-section,
+.recipe-section,
+.notes-section {
+    margin-bottom: 16px;
+}
+
+.ingredients-section strong,
+.recipe-section strong {
+    color: var(--accent-primary);
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.ingredients-list {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.ingredients-list ul {
+    margin-left: 16px;
+    list-style: disc;
+}
+
+.recipe-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.notes-text {
+    font-style: italic;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Meal Plan Input Styles */
+.meal-plan-input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.prep-time-input {
+    width: 100px;
+    padding: 12px;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+}
+
+.ingredients-textarea,
+.recipe-textarea {
+    width: 100%;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+    padding: 12px;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 12px;
+}
+
+/* Improve nav for 6 items */
+.nav-btn {
+    padding: 8px 10px;
+}
+
+@media (max-width: 480px) {
+    .nav-btn {
+        padding: 6px 6px;
+        font-size: 0.6rem;
+    }
+
+    .nav-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .day-tab {
+        padding: 8px 4px;
+        min-width: 32px;
+    }
 }

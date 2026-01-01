@@ -57,7 +57,34 @@
                     </svg>
                     <span>Meals</span>
                 </button>
+                <button class="nav-btn" data-view="plan" onclick="switchView('plan')">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Plan</span>
+                </button>
+                <button class="nav-btn" data-view="recipes" onclick="switchView('recipes')">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <span>Recipes</span>
+                </button>
             </nav>
+
+            <div class="day-controller">
+                <span class="date-label" id="current-date-display">...</span>
+                <select id="day-override" class="day-select" onchange="changeDayMode()">
+                    <option value="0">Monday</option>
+                    <option value="1">Tuesday</option>
+                    <option value="2">Wednesday</option>
+                    <option value="3">Thursday</option>
+                    <option value="4">Friday</option>
+                    <option value="5">Saturday</option>
+                    <option value="6">Sunday</option>
+                </select>
+            </div>
 
             <!-- CHECK-IN VIEW -->
             <div id="view-checkin" class="app-view active">
@@ -76,18 +103,7 @@
                         </div>
                     </div>
 
-                    <div class="day-controller">
-                        <span class="date-label" id="current-date-display">...</span>
-                        <select id="day-override" class="day-select" onchange="changeDayMode()">
-                            <option value="0">Monday</option>
-                            <option value="1">Tuesday</option>
-                            <option value="2">Wednesday</option>
-                            <option value="3">Thursday</option>
-                            <option value="4">Friday</option>
-                            <option value="5">Saturday</option>
-                            <option value="6">Sunday</option>
-                        </select>
-                    </div>
+
 
                     <!-- Mood Input -->
                     <div class="checkin-section">
@@ -305,6 +321,107 @@
                     </div>
                 </div>
             </div>
+
+            <!-- WEEKLY PLAN VIEW -->
+            <div id="view-plan" class="app-view">
+                <div class="glass-card">
+                    <div class="app-header">
+                        <div class="brand-title">Weekly Plan</div>
+                        <div class="header-actions">
+                            <span class="week-label" id="week-plan-label"></span>
+                        </div>
+                    </div>
+
+                    <!-- Day Tabs for Week Planning -->
+                    <div class="day-tabs" id="plan-day-tabs">
+                        <button class="day-tab" data-day="0" onclick="switchPlanDay(0)">Mon</button>
+                        <button class="day-tab" data-day="1" onclick="switchPlanDay(1)">Tue</button>
+                        <button class="day-tab" data-day="2" onclick="switchPlanDay(2)">Wed</button>
+                        <button class="day-tab" data-day="3" onclick="switchPlanDay(3)">Thu</button>
+                        <button class="day-tab" data-day="4" onclick="switchPlanDay(4)">Fri</button>
+                        <button class="day-tab" data-day="5" onclick="switchPlanDay(5)">Sat</button>
+                        <button class="day-tab" data-day="6" onclick="switchPlanDay(6)">Sun</button>
+                    </div>
+
+                    <div class="progress-container" id="plan-progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Tasks Completed</span>
+                            <span class="progress-percent" id="plan-progress-percent">0/0</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="plan-progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div id="weekly-tasks-list" class="task-list"></div>
+
+                    <div class="add-section">
+                        <div class="detail-label">Add Task for This Day</div>
+                        <input type="text" id="task-title" placeholder="Task title" class="task-input">
+                        <textarea id="task-description" class="task-desc" rows="2"
+                            placeholder="Notes or details (optional)"></textarea>
+                        <div class="priority-select-row">
+                            <label>Priority:</label>
+                            <select id="task-priority" class="priority-select">
+                                <option value="1">Normal</option>
+                                <option value="2">High</option>
+                                <option value="3">Urgent</option>
+                            </select>
+                        </div>
+                        <button class="primary" onclick="addWeeklyTask()">Add Task</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEAL PLANNING / RECIPES VIEW -->
+            <div id="view-recipes" class="app-view">
+                <div class="glass-card">
+                    <div class="app-header">
+                        <div class="brand-title">Meal Planning</div>
+                        <div class="header-actions">
+                            <span class="week-label" id="week-meals-label"></span>
+                        </div>
+                    </div>
+
+                    <!-- Day Tabs for Meal Planning -->
+                    <div class="day-tabs" id="recipes-day-tabs">
+                        <button class="day-tab" data-day="0" onclick="switchMealPlanDay(0)">Mon</button>
+                        <button class="day-tab" data-day="1" onclick="switchMealPlanDay(1)">Tue</button>
+                        <button class="day-tab" data-day="2" onclick="switchMealPlanDay(2)">Wed</button>
+                        <button class="day-tab" data-day="3" onclick="switchMealPlanDay(3)">Thu</button>
+                        <button class="day-tab" data-day="4" onclick="switchMealPlanDay(4)">Fri</button>
+                        <button class="day-tab" data-day="5" onclick="switchMealPlanDay(5)">Sat</button>
+                        <button class="day-tab" data-day="6" onclick="switchMealPlanDay(6)">Sun</button>
+                    </div>
+
+                    <div class="meal-plan-day-list" id="meal-plan-list">
+                        <!-- Meal plan cards will be inserted here -->
+                    </div>
+
+                    <div class="add-section">
+                        <div class="detail-label">Plan a Meal</div>
+                        <div class="meal-plan-input-row">
+                            <select id="plan-meal-type" class="meal-type-select">
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snack">Snack</option>
+                            </select>
+                            <input type="number" id="plan-prep-time" placeholder="Prep mins" class="prep-time-input"
+                                min="0">
+                        </div>
+                        <input type="text" id="plan-meal-name" placeholder="Meal name (e.g., Grilled Chicken Salad)"
+                            class="meal-name-input">
+                        <textarea id="plan-ingredients" class="ingredients-textarea" rows="2"
+                            placeholder="Ingredients (one per line or comma-separated)"></textarea>
+                        <textarea id="plan-recipe" class="recipe-textarea" rows="4"
+                            placeholder="Recipe instructions..."></textarea>
+                        <input type="text" id="plan-notes" placeholder="Additional notes (optional)"
+                            class="notes-input">
+                        <button class="primary" onclick="addMealPlan()">Add Meal Plan</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Task Info Modal -->
@@ -358,41 +475,10 @@
                     <span class="habit-title"></span>
                     <span class="streak-container"></span>
                 </div>
-                <div class="log-indicator" title="">
-                    <span class="log-dot note" title="Note"></span>
-                    <span class="log-dot photo" title="Photo"></span>
-                </div>
                 <button class="info-btn" title="Task Details" style="display: none;">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                </button>
-                <button class="action-btn">
-                    <span class="btn-text">Log</span>
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                    </svg>
-                </button>
-            </div>
-            <div class="habit-details">
-                <label class="detail-label">Note / Alternative Activity:</label>
-                <textarea class="detail-textarea" rows="2" placeholder="Did you do something else?"></textarea>
-
-                <label class="detail-label">Evidence (Photo):</label>
-                <div class="upload-box">
-                    <span class="upload-hint">Click to Upload Image</span>
-                    <input type="file" hidden accept="image/*" class="file-input">
-                    <img class="preview-img">
-                </div>
-
-                <button class="delete-btn">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    Delete Routine Permanently
                 </button>
             </div>
         </div>
@@ -465,6 +551,68 @@
                 <input type="checkbox" class="winddown-check">
                 <span class="winddown-title"></span>
             </label>
+        </div>
+    </template>
+
+    <!-- Weekly Task Card Template -->
+    <template id="weekly-task-template">
+        <div class="weekly-task-card">
+            <div class="task-main" onclick="">
+                <div class="checkbox">
+                    <svg class="check-icon" width="16" height="16" stroke="white" stroke-width="3" fill="none"
+                        viewBox="0 0 24 24" style="display: none;">
+                        <path d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <div class="task-content">
+                    <span class="task-title"></span>
+                    <span class="task-description"></span>
+                </div>
+            </div>
+            <div class="task-actions">
+                <span class="priority-badge"></span>
+                <button class="delete-task-btn" title="Remove">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Meal Plan Recipe Card Template -->
+    <template id="meal-plan-template">
+        <div class="meal-plan-card">
+            <div class="meal-plan-header">
+                <span class="meal-type-badge"></span>
+                <span class="meal-plan-name"></span>
+                <button class="expand-recipe-btn" title="View Recipe">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <button class="delete-meal-plan-btn" title="Remove">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="meal-plan-meta">
+                <span class="prep-time"></span>
+            </div>
+            <div class="meal-plan-details" style="display: none;">
+                <div class="ingredients-section">
+                    <strong>Ingredients:</strong>
+                    <div class="ingredients-list"></div>
+                </div>
+                <div class="recipe-section">
+                    <strong>Recipe:</strong>
+                    <div class="recipe-text"></div>
+                </div>
+                <div class="notes-section">
+                    <div class="notes-text"></div>
+                </div>
+            </div>
         </div>
     </template>
 

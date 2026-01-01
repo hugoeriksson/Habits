@@ -5,7 +5,6 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- STATE ---
 let user = null;
-let morningTasks = [];
 let isSignUp = false;
 let activeDayIndex = (new Date().getDay() + 6) % 7;
 let currentView = 'checkin';
@@ -17,14 +16,29 @@ let pomodoros = [];
 let meals = [];
 let checkinData = null;
 
+// Helper to get Monday of current week
+function getWeekStart(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff)).toISOString().split('T')[0];
+}
+
+// Weekly planning state
+let weeklyTasks = [];
+let planDayIndex = (new Date().getDay() + 6) % 7; // Default to today
+let currentWeekStart = getWeekStart(new Date());
+
+// Meal planning state
+let mealPlans = [];
+let mealPlanDayIndex = (new Date().getDay() + 6) % 7;
+
 // Local Storage Wrappers
 const getLocal = (k) => JSON.parse(localStorage.getItem(k)) || {};
 const setLocal = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-// Load local schedules
-let localSchedule = getLocal('focus_schedule_days');
+// Load local history
 let localHistory = getLocal('focus_history');
-let localLogs = getLocal('focus_logs');
 
 // Winddown routine items (configurable)
 const winddownItems = [
@@ -108,7 +122,6 @@ window.addEventListener('DOMContentLoaded', () => {
     setupDate();
     setupMoodSlider();
     setupMealUpload();
-    setupAddButtons();
     checkSession();
 });
 
@@ -154,16 +167,6 @@ function setupMealUpload() {
     }
 }
 
-function setupAddButtons() {
-    // Morning day toggles
-    const morningToggles = document.getElementById('morning-day-toggles');
-    if (morningToggles) {
-        morningToggles.querySelectorAll('.day-btn').forEach(btn => {
-            btn.onclick = () => btn.classList.toggle('selected');
-        });
-    }
-}
-
 function changeDayMode() {
     activeDayIndex = parseInt(ui.daySelect.value);
     renderMorningList();
@@ -183,6 +186,8 @@ function switchView(view) {
     if (view === 'morning') renderMorningList();
     if (view === 'work') renderPomodoros();
     if (view === 'meals') renderMealsView();
+    if (view === 'plan') renderPlanView();
+    if (view === 'recipes') renderMealPlanView();
 }
 
 // --- AUTH ---
@@ -244,7 +249,9 @@ async function loadAllData() {
         loadTodayCheckin(),
         loadTodayPomodoros(),
         loadTodayMeals(),
-        loadTodayWater()
+        loadTodayWater(),
+        loadWeeklyTasks(),
+        loadMealPlans()
     ]);
     loadCheckinView();
 }
@@ -376,7 +383,6 @@ const morningItems = [
 ];
 
 // --- MORNING ROUTINE ---
-// (No longer loading from DB)
 
 function renderMorningList() {
     if (!ui.morningList) return;
@@ -423,11 +429,6 @@ function renderMorningList() {
                 showTaskInfo(taskDetails[id].title, taskDetails[id].content);
             };
         }
-
-        // Hide log indicator and action btn (not needed for morning routine)
-        clone.querySelector('.log-indicator').style.display = 'none';
-        clone.querySelector('.action-btn').style.display = 'none';
-        clone.querySelector('.habit-details').remove();
 
         // Streak calculation
         const streak = calculateStreak(`morning_${id}`);
@@ -713,7 +714,11 @@ function renderCalendar(view) {
 
     // Calculate summary stats
     const totalCompletions = Object.keys(localHistory).length;
-    const bestStreak = morningTasks.reduce((max, t) => Math.max(max, calculateStreak(`morning_${t.id}`)), 0);
+    // Fix: Calculate best streak using hardcoded morningItems
+    const bestStreak = morningItems.reduce((max, t) => {
+        const id = t.title.toLowerCase().replace(/\s+/g, '_');
+        return Math.max(max, calculateStreak(`morning_${id}`));
+    }, 0);
     const activeDays = new Set(Object.keys(localHistory).map(k => k.split('_')[0])).size;
 
     const summaryTmpl = document.getElementById('stats-summary-template');
@@ -803,13 +808,12 @@ function countActivity(dateStr) {
 function exportData() {
     const data = {
         exportedAt: new Date(),
-        morningTasks,
         pomodoros,
         meals,
         waterCount,
-        schedules: localSchedule,
         history: localHistory,
-        logs: localLogs
+        weeklyTasks,
+        mealPlans
     };
 
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
@@ -819,4 +823,330 @@ function exportData() {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+}
+
+// ============================================
+// WEEKLY TASKS
+// ============================================
+
+
+// Format week label
+function formatWeekLabel(weekStart) {
+    const start = new Date(weekStart);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const opts = { month: 'short', day: 'numeric' };
+    return `${start.toLocaleDateString('en-US', opts)} - ${end.toLocaleDateString('en-US', opts)}`;
+}
+
+// Load weekly tasks from Supabase
+async function loadWeeklyTasks() {
+    const { data } = await sb.from('weekly_tasks').select('*')
+        .eq('user_id', user.id)
+        .eq('week_start', currentWeekStart)
+        .order('priority', { ascending: false });
+
+    if (data) weeklyTasks = data;
+}
+
+// Render the plan view
+function renderPlanView() {
+    updatePlanDayTabs();
+    updateWeekLabel('week-plan-label');
+    renderWeeklyTasks();
+}
+
+// Update day tabs for planning
+function updatePlanDayTabs() {
+    const tabs = document.querySelectorAll('#plan-day-tabs .day-tab');
+    const todayIndex = (new Date().getDay() + 6) % 7;
+
+    tabs.forEach(tab => {
+        const day = parseInt(tab.dataset.day);
+        tab.classList.remove('active', 'today');
+        if (day === planDayIndex) tab.classList.add('active');
+        if (day === todayIndex) tab.classList.add('today');
+    });
+}
+
+// Update week label display
+function updateWeekLabel(elementId) {
+    const el = document.getElementById(elementId);
+    if (el) el.textContent = formatWeekLabel(currentWeekStart);
+}
+
+// Switch plan day
+function switchPlanDay(dayIndex) {
+    planDayIndex = dayIndex;
+    renderPlanView();
+}
+
+// Render weekly tasks list
+function renderWeeklyTasks() {
+    const list = document.getElementById('weekly-tasks-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    const dayTasks = weeklyTasks.filter(t => t.day_of_week === planDayIndex);
+
+    if (dayTasks.length === 0) {
+        list.innerHTML = '<div class="empty-state">No tasks for this day. Add some below!</div>';
+        updatePlanProgress(0, 0);
+        return;
+    }
+
+    const template = document.getElementById('weekly-task-template');
+
+    dayTasks.forEach(task => {
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.weekly-task-card');
+
+        clone.querySelector('.task-title').textContent = task.title;
+        clone.querySelector('.task-description').textContent = task.description || '';
+
+        // Priority badge
+        const priorityBadge = clone.querySelector('.priority-badge');
+        const priorityMap = { 1: 'normal', 2: 'high', 3: 'urgent' };
+        const priorityLabel = { 1: 'Normal', 2: 'High', 3: 'Urgent' };
+        priorityBadge.classList.add(priorityMap[task.priority] || 'normal');
+        priorityBadge.textContent = priorityLabel[task.priority] || 'Normal';
+
+        // Completed state
+        if (task.is_completed) {
+            card.classList.add('completed');
+        }
+
+        // Click to toggle
+        clone.querySelector('.task-main').onclick = () => toggleWeeklyTask(task.id, task.is_completed);
+
+        // Delete button
+        clone.querySelector('.delete-task-btn').onclick = () => deleteWeeklyTask(task.id);
+
+        list.appendChild(card);
+    });
+
+    const completed = dayTasks.filter(t => t.is_completed).length;
+    updatePlanProgress(completed, dayTasks.length);
+}
+
+// Update plan progress bar
+function updatePlanProgress(completed, total) {
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const percentEl = document.getElementById('plan-progress-percent');
+    const fillEl = document.getElementById('plan-progress-fill');
+    if (percentEl) percentEl.textContent = `${completed}/${total}`;
+    if (fillEl) fillEl.style.width = `${percent}%`;
+}
+
+// Toggle weekly task completion
+async function toggleWeeklyTask(id, currentStatus) {
+    const newStatus = !currentStatus;
+
+    const { error } = await sb.from('weekly_tasks')
+        .update({ is_completed: newStatus })
+        .eq('id', id);
+
+    if (!error) {
+        const task = weeklyTasks.find(t => t.id === id);
+        if (task) task.is_completed = newStatus;
+        renderWeeklyTasks();
+    }
+}
+
+// Add weekly task
+async function addWeeklyTask() {
+    const title = document.getElementById('task-title').value.trim();
+    const description = document.getElementById('task-description').value.trim();
+    const priority = parseInt(document.getElementById('task-priority').value) || 1;
+
+    if (!title) return alert('Please enter a task title.');
+
+    const { data, error } = await sb.from('weekly_tasks').insert([{
+        user_id: user.id,
+        week_start: currentWeekStart,
+        day_of_week: planDayIndex,
+        title,
+        description: description || null,
+        priority,
+        is_completed: false
+    }]).select().single();
+
+    if (data) {
+        weeklyTasks.push(data);
+        document.getElementById('task-title').value = '';
+        document.getElementById('task-description').value = '';
+        document.getElementById('task-priority').value = '1';
+        renderWeeklyTasks();
+    } else if (error) {
+        console.error('Error adding weekly task:', error);
+        alert('Error adding task');
+    }
+}
+
+// Delete weekly task
+async function deleteWeeklyTask(id) {
+    const { error } = await sb.from('weekly_tasks').delete().eq('id', id);
+    if (!error) {
+        weeklyTasks = weeklyTasks.filter(t => t.id !== id);
+        renderWeeklyTasks();
+    }
+}
+
+// ============================================
+// MEAL PLANNING / RECIPES
+// ============================================
+
+// Load meal plans from Supabase
+async function loadMealPlans() {
+    const { data } = await sb.from('meal_plans').select('*')
+        .eq('user_id', user.id)
+        .eq('week_start', currentWeekStart)
+        .order('meal_type', { ascending: true });
+
+    if (data) mealPlans = data;
+}
+
+// Render meal plan view
+function renderMealPlanView() {
+    updateMealPlanDayTabs();
+    updateWeekLabel('week-meals-label');
+    renderMealPlans();
+}
+
+// Update day tabs for meal planning
+function updateMealPlanDayTabs() {
+    const tabs = document.querySelectorAll('#recipes-day-tabs .day-tab');
+    const todayIndex = (new Date().getDay() + 6) % 7;
+
+    tabs.forEach(tab => {
+        const day = parseInt(tab.dataset.day);
+        tab.classList.remove('active', 'today');
+        if (day === mealPlanDayIndex) tab.classList.add('active');
+        if (day === todayIndex) tab.classList.add('today');
+    });
+}
+
+// Switch meal plan day
+function switchMealPlanDay(dayIndex) {
+    mealPlanDayIndex = dayIndex;
+    renderMealPlanView();
+}
+
+// Render meal plans list
+function renderMealPlans() {
+    const list = document.getElementById('meal-plan-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    const dayPlans = mealPlans.filter(p => p.day_of_week === mealPlanDayIndex);
+
+    if (dayPlans.length === 0) {
+        list.innerHTML = '<div class="empty-state">No meals planned for this day. Add some recipes below!</div>';
+        return;
+    }
+
+    // Sort by meal type order
+    const mealOrder = { 'Breakfast': 1, 'Lunch': 2, 'Dinner': 3, 'Snack': 4 };
+    dayPlans.sort((a, b) => (mealOrder[a.meal_type] || 5) - (mealOrder[b.meal_type] || 5));
+
+    const template = document.getElementById('meal-plan-template');
+
+    dayPlans.forEach(plan => {
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.meal-plan-card');
+
+        clone.querySelector('.meal-type-badge').textContent = plan.meal_type;
+        clone.querySelector('.meal-plan-name').textContent = plan.name;
+
+        // Prep time
+        const prepTimeEl = clone.querySelector('.prep-time');
+        if (plan.prep_time) {
+            prepTimeEl.textContent = `${plan.prep_time} min`;
+        } else {
+            prepTimeEl.style.display = 'none';
+        }
+
+        // Ingredients
+        const ingredientsList = clone.querySelector('.ingredients-list');
+        if (plan.ingredients) {
+            // Parse ingredients (can be comma-separated or newline-separated)
+            const items = plan.ingredients.split(/[,\n]+/).map(i => i.trim()).filter(i => i);
+            if (items.length > 0) {
+                ingredientsList.innerHTML = '<ul>' + items.map(i => `<li>${i}</li>`).join('') + '</ul>';
+            } else {
+                ingredientsList.textContent = plan.ingredients;
+            }
+        }
+
+        // Recipe
+        clone.querySelector('.recipe-text').textContent = plan.recipe || '';
+
+        // Notes
+        const notesSection = clone.querySelector('.notes-section');
+        if (plan.notes) {
+            clone.querySelector('.notes-text').textContent = plan.notes;
+        } else {
+            notesSection.style.display = 'none';
+        }
+
+        // Expand/collapse recipe details
+        const expandBtn = clone.querySelector('.expand-recipe-btn');
+        const details = clone.querySelector('.meal-plan-details');
+        expandBtn.onclick = () => {
+            const isHidden = details.style.display === 'none';
+            details.style.display = isHidden ? 'block' : 'none';
+            expandBtn.classList.toggle('expanded', isHidden);
+        };
+
+        // Delete button
+        clone.querySelector('.delete-meal-plan-btn').onclick = () => deleteMealPlan(plan.id);
+
+        list.appendChild(card);
+    });
+}
+
+// Add meal plan
+async function addMealPlan() {
+    const mealType = document.getElementById('plan-meal-type').value;
+    const name = document.getElementById('plan-meal-name').value.trim();
+    const prepTime = parseInt(document.getElementById('plan-prep-time').value) || null;
+    const ingredients = document.getElementById('plan-ingredients').value.trim();
+    const recipe = document.getElementById('plan-recipe').value.trim();
+    const notes = document.getElementById('plan-notes').value.trim();
+
+    if (!name) return alert('Please enter a meal name.');
+
+    const { data, error } = await sb.from('meal_plans').insert([{
+        user_id: user.id,
+        week_start: currentWeekStart,
+        day_of_week: mealPlanDayIndex,
+        meal_type: mealType,
+        name,
+        prep_time: prepTime,
+        ingredients: ingredients || null,
+        recipe: recipe || null,
+        notes: notes || null
+    }]).select().single();
+
+    if (data) {
+        mealPlans.push(data);
+        document.getElementById('plan-meal-name').value = '';
+        document.getElementById('plan-prep-time').value = '';
+        document.getElementById('plan-ingredients').value = '';
+        document.getElementById('plan-recipe').value = '';
+        document.getElementById('plan-notes').value = '';
+        renderMealPlans();
+    } else if (error) {
+        console.error('Error adding meal plan:', error);
+        alert('Error adding meal plan');
+    }
+}
+
+// Delete meal plan
+async function deleteMealPlan(id) {
+    const { error } = await sb.from('meal_plans').delete().eq('id', id);
+    if (!error) {
+        mealPlans = mealPlans.filter(p => p.id !== id);
+        renderMealPlans();
+    }
 }
