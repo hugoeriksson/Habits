@@ -15,6 +15,7 @@ let waterCount = 0;
 let pomodoros = [];
 let meals = [];
 let checkinData = null;
+let morningCompletions = {}; // Stores completed morning tasks for today
 
 // Helper to get Monday of current week
 function getWeekStart(date) {
@@ -33,11 +34,11 @@ let currentWeekStart = getWeekStart(new Date());
 let mealPlans = [];
 let mealPlanDayIndex = (new Date().getDay() + 6) % 7;
 
-// Local Storage Wrappers
+// Local Storage Wrappers (used for fallback/offline caching)
 const getLocal = (k) => JSON.parse(localStorage.getItem(k)) || {};
 const setLocal = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-// Load local history
+// Load local history (kept for stats/streaks - will be migrated to use Supabase data)
 let localHistory = getLocal('focus_history');
 
 // Winddown routine items (configurable)
@@ -251,7 +252,8 @@ async function loadAllData() {
         loadTodayMeals(),
         loadTodayWater(),
         loadWeeklyTasks(),
-        loadMealPlans()
+        loadMealPlans(),
+        loadMorningCompletions()
     ]);
     loadCheckinView();
 }
@@ -384,6 +386,20 @@ const morningItems = [
 
 // --- MORNING ROUTINE ---
 
+// Load morning completions from Supabase
+async function loadMorningCompletions() {
+    const { data } = await sb.from('morning_completions').select('*')
+        .eq('user_id', user.id)
+        .eq('date', todayStr);
+
+    morningCompletions = {};
+    if (data) {
+        data.forEach(item => {
+            morningCompletions[item.task_id] = item.completed;
+        });
+    }
+}
+
 function renderMorningList() {
     if (!ui.morningList) return;
     ui.morningList.innerHTML = '';
@@ -398,7 +414,6 @@ function renderMorningList() {
     }
 
     const template = document.getElementById('habit-card-template');
-    const todayKey = todayStr;
 
     visibleItems.forEach((item) => {
         const title = item.title;
@@ -407,8 +422,7 @@ function renderMorningList() {
 
         // Use slug for ID
         const id = title.toLowerCase().replace(/\s+/g, '_');
-        const key = `${todayKey}_morning_${id}`;
-        const isCompleted = localHistory[key] || false;
+        const isCompleted = morningCompletions[id] || false;
 
         if (isCompleted) card.classList.add('done');
 
@@ -430,7 +444,7 @@ function renderMorningList() {
             };
         }
 
-        // Streak calculation
+        // Streak calculation (using Supabase data via local sync)
         const streak = calculateStreak(`morning_${id}`);
         if (streak >= 2) {
             const streakTmpl = document.getElementById('streak-badge-template');
@@ -444,20 +458,45 @@ function renderMorningList() {
 
     const completed = visibleItems.filter(item => {
         const id = item.title.toLowerCase().replace(/\s+/g, '_');
-        return localHistory[`${todayKey}_morning_${id}`];
+        return morningCompletions[id];
     }).length;
 
     updateMorningProgress(completed, visibleItems.length);
 }
 
-function toggleMorningTask(id, currentStatus) {
-    const key = `${todayStr}_morning_${id}`;
-    if (currentStatus) {
-        delete localHistory[key];
+async function toggleMorningTask(id, currentStatus) {
+    const newStatus = !currentStatus;
+
+    if (newStatus) {
+        // Insert or update completion record
+        const { error } = await sb.from('morning_completions').upsert({
+            user_id: user.id,
+            date: todayStr,
+            task_id: id,
+            completed: true
+        }, { onConflict: 'user_id,date,task_id' });
+
+        if (!error) {
+            morningCompletions[id] = true;
+            // Also update local history for streak calculation
+            localHistory[`${todayStr}_morning_${id}`] = true;
+            setLocal('focus_history', localHistory);
+        }
     } else {
-        localHistory[key] = true;
+        // Delete the completion record
+        const { error } = await sb.from('morning_completions').delete()
+            .eq('user_id', user.id)
+            .eq('date', todayStr)
+            .eq('task_id', id);
+
+        if (!error) {
+            delete morningCompletions[id];
+            // Also update local history for streak calculation
+            delete localHistory[`${todayStr}_morning_${id}`];
+            setLocal('focus_history', localHistory);
+        }
     }
-    setLocal('focus_history', localHistory);
+
     renderMorningList();
 }
 
