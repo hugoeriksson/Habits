@@ -1003,6 +1003,39 @@ button.secondary:hover {
     margin-bottom: 12px;
 }
 
+/* Meal Plan Picker */
+.meal-plan-picker {
+    margin-bottom: 12px;
+}
+
+.picker-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.meal-plan-select {
+    width: 100%;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: white;
+    padding: 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.meal-plan-select:hover {
+    border-color: var(--accent-primary);
+}
+
+.meal-plan-select option {
+    background: #1f1f2e;
+    padding: 8px;
+}
+
 /* ============================================
    INFO BUTTON
    ============================================ */

@@ -280,8 +280,38 @@ function renderWinddownList() {
             checkbox.checked = checkinData.winddown_completed[idx] || false;
         }
 
+        // Auto-save on change
+        checkbox.addEventListener('change', () => toggleWinddownItem(idx, checkbox.checked));
+
         ui.winddownList.appendChild(clone);
     });
+}
+
+// Auto-save individual winddown checkbox
+async function toggleWinddownItem(index, isChecked) {
+    // Update local state
+    if (!checkinData) {
+        checkinData = {
+            user_id: user.id,
+            date: todayStr,
+            winddown_completed: {}
+        };
+    }
+    if (!checkinData.winddown_completed) {
+        checkinData.winddown_completed = {};
+    }
+    checkinData.winddown_completed[index] = isChecked;
+
+    // Save to Supabase
+    const { error } = await sb.from('daily_checkins').upsert({
+        user_id: user.id,
+        date: todayStr,
+        winddown_completed: checkinData.winddown_completed
+    }, { onConflict: 'user_id,date' });
+
+    if (error) {
+        console.error('Error saving winddown item:', error);
+    }
 }
 
 async function loadExistingCheckinData() {
@@ -607,6 +637,68 @@ async function loadTodayWater() {
 function renderMealsView() {
     renderMeals();
     renderWaterCount();
+    populateMealPlanPicker();
+}
+
+// Populate the meal plan picker dropdown with today's planned meals
+function populateMealPlanPicker() {
+    const picker = document.getElementById('meal-plan-picker');
+    if (!picker) return;
+
+    // Get today's day index (0=Mon, 6=Sun)
+    const todayIndex = (new Date().getDay() + 6) % 7;
+
+    // Filter meal plans for today
+    const todayPlans = mealPlans.filter(p => p.day_of_week === todayIndex);
+
+    // Reset picker options
+    picker.innerHTML = '<option value="">-- Or type below --</option>';
+
+    if (todayPlans.length === 0) {
+        picker.innerHTML = '<option value="">No meals planned for today</option>';
+        return;
+    }
+
+    // Sort by meal type order
+    const mealOrder = { 'Breakfast': 1, 'Lunch': 2, 'Dinner': 3, 'Snack': 4 };
+    todayPlans.sort((a, b) => (mealOrder[a.meal_type] || 5) - (mealOrder[b.meal_type] || 5));
+
+    todayPlans.forEach(plan => {
+        const option = document.createElement('option');
+        option.value = plan.id;
+        option.textContent = `${plan.meal_type}: ${plan.name}`;
+        option.dataset.mealType = plan.meal_type;
+        option.dataset.name = plan.name;
+        option.dataset.ingredients = plan.ingredients || '';
+        picker.appendChild(option);
+    });
+}
+
+// When user selects a meal from the plan picker
+function selectMealFromPlan() {
+    const picker = document.getElementById('meal-plan-picker');
+    const selectedOption = picker.options[picker.selectedIndex];
+
+    if (!selectedOption.value) return;
+
+    // Set the meal type dropdown
+    const mealTypeSelect = document.getElementById('meal-type');
+    if (selectedOption.dataset.mealType) {
+        mealTypeSelect.value = selectedOption.dataset.mealType;
+    }
+
+    // Set the description with meal name and ingredients
+    const description = document.getElementById('meal-description');
+    let descText = selectedOption.dataset.name || '';
+    if (selectedOption.dataset.ingredients) {
+        descText += '\n\nIngredients: ' + selectedOption.dataset.ingredients;
+    }
+    description.value = descText;
+
+    // Set current time
+    const timeInput = document.getElementById('meal-time');
+    const now = new Date();
+    timeInput.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
 function renderMeals() {

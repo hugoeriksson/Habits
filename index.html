@@ -310,6 +310,12 @@
                             </select>
                             <input type="time" id="meal-time" class="meal-time-input">
                         </div>
+                        <div class="meal-plan-picker">
+                            <label class="picker-label">Quick pick from today's plan:</label>
+                            <select id="meal-plan-picker" class="meal-plan-select" onchange="selectMealFromPlan()">
+                                <option value="">-- Or type below --</option>
+                            </select>
+                        </div>
                         <textarea id="meal-description" class="meal-desc" rows="2"
                             placeholder="What did you eat?"></textarea>
                         <div class="upload-box" id="meal-upload-box">
