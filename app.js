@@ -826,7 +826,7 @@ function calculateStreak(habitId) {
 // --- STATS & EXPORT ---
 function openStats() {
     ui.statsModal.classList.add('active');
-    switchTab('week');
+    switchTab('history');
 }
 
 function closeStats() {
@@ -836,7 +836,122 @@ function closeStats() {
 function switchTab(view) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(`tab-${view}`).classList.add('active');
-    renderCalendar(view);
+    if (view === 'history') {
+        renderHistory();
+    } else {
+        renderCalendar(view);
+    }
+}
+
+// Helper function to get relative date label
+function getRelativeDateLabel(dateStr) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+
+    const diffTime = today - date;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays === 2) return '2 days ago';
+    if (diffDays === 3) return '3 days ago';
+    if (diffDays <= 7) return 'This week';
+    if (diffDays <= 14) return 'Last week';
+    if (diffDays <= 30) return 'This month';
+    return 'Older';
+}
+
+// Format task name for display
+function formatTaskName(taskKey) {
+    // Remove date prefix and morning_ prefix, then format nicely
+    const parts = taskKey.split('_');
+    // Skip the date part (first part)
+    const taskParts = parts.slice(1);
+    // Remove 'morning' prefix if present
+    if (taskParts[0] === 'morning') {
+        taskParts.shift();
+    }
+    // Capitalize and join
+    return taskParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+}
+
+// Render history view with grouped completed tasks
+function renderHistory() {
+    ui.statsContent.innerHTML = '';
+
+    // Get all completed tasks and group by relative date
+    const tasksByDate = {};
+    const dateOrder = ['Today', 'Yesterday', '2 days ago', '3 days ago', 'This week', 'Last week', 'This month', 'Older'];
+
+    Object.keys(localHistory).forEach(key => {
+        const datePart = key.split('_')[0];
+        const label = getRelativeDateLabel(datePart);
+
+        if (!tasksByDate[label]) {
+            tasksByDate[label] = [];
+        }
+
+        tasksByDate[label].push({
+            key,
+            date: datePart,
+            name: formatTaskName(key)
+        });
+    });
+
+    // Sort tasks within each group by date (newest first)
+    Object.values(tasksByDate).forEach(tasks => {
+        tasks.sort((a, b) => new Date(b.date) - new Date(a.date));
+    });
+
+    if (Object.keys(tasksByDate).length === 0) {
+        ui.statsContent.innerHTML = '<div class="empty-state">No completed tasks yet. Start completing your routines!</div>';
+        return;
+    }
+
+    let html = '<div class="history-list">';
+
+    dateOrder.forEach(label => {
+        if (tasksByDate[label] && tasksByDate[label].length > 0) {
+            const tasks = tasksByDate[label];
+            const badgeClass = label === 'Today' ? 'today' :
+                label === 'Yesterday' ? 'yesterday' :
+                    label.includes('days ago') ? 'recent' : 'older';
+
+            html += `
+                <div class="history-group">
+                    <div class="history-header">
+                        <span class="history-label ${badgeClass}">${label}</span>
+                        <span class="history-count">${tasks.length} task${tasks.length > 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="history-tasks">`;
+
+            tasks.forEach(task => {
+                const formattedDate = new Date(task.date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                html += `
+                    <div class="history-task">
+                        <span class="history-check">✓</span>
+                        <span class="history-task-name">${task.name}</span>
+                        <span class="history-task-date">${formattedDate}</span>
+                    </div>`;
+            });
+
+            html += `
+                    </div>
+                </div>`;
+        }
+    });
+
+    html += '</div>';
+
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    ui.statsContent.appendChild(div);
 }
 
 function renderCalendar(view) {
@@ -936,21 +1051,137 @@ function countActivity(dateStr) {
     return Object.keys(localHistory).filter(key => key.startsWith(dateStr)).length;
 }
 
+// Helper to format date for export
+function formatDateForExport(date) {
+    return new Date(date).toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Helper to format time duration
+function formatDuration(mins) {
+    if (!mins) return null;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (h > 0) {
+        return `${h}h ${m}m`;
+    }
+    return `${m}m`;
+}
+
 function exportData() {
+    const today = new Date();
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    // Group completed tasks by date
+    const completedTasksByDate = {};
+    Object.keys(localHistory).forEach(key => {
+        const datePart = key.split('_')[0];
+        if (!completedTasksByDate[datePart]) {
+            completedTasksByDate[datePart] = [];
+        }
+        completedTasksByDate[datePart].push(formatTaskName(key));
+    });
+
+    // Format pomodoros with readable structure
+    const formattedPomodoros = pomodoros.map(p => ({
+        time: p.time,
+        category: p.tag,
+        notes: p.notes || '(no notes)',
+        date: p.date
+    }));
+
+    // Format meals with readable structure
+    const formattedMeals = meals.map(m => ({
+        type: m.meal_type,
+        time: m.time || '(no time)',
+        description: m.description || '(no description)',
+        hasPhoto: !!m.photo,
+        date: m.date
+    }));
+
+    // Format weekly tasks with better structure
+    const formattedWeeklyTasks = weeklyTasks.map(t => ({
+        title: t.title,
+        description: t.description || '(no description)',
+        day: dayNames[(t.day_of_week + 1) % 7], // Convert 0=Mon to day name
+        priority: t.priority === 3 ? 'Urgent' : t.priority === 2 ? 'High' : 'Normal',
+        completed: t.is_completed ? 'Yes' : 'No',
+        weekOf: t.week_start
+    }));
+
+    // Format meal plans with better structure
+    const formattedMealPlans = mealPlans.map(p => ({
+        name: p.name,
+        mealType: p.meal_type,
+        day: dayNames[(p.day_of_week + 1) % 7],
+        prepTime: p.prep_time ? `${p.prep_time} minutes` : '(not specified)',
+        ingredients: p.ingredients || '(not specified)',
+        recipe: p.recipe || '(not specified)',
+        notes: p.notes || '(no notes)',
+        weekOf: p.week_start
+    }));
+
     const data = {
-        exportedAt: new Date(),
-        pomodoros,
-        meals,
-        waterCount,
-        history: localHistory,
-        weeklyTasks,
-        mealPlans
+        exportInfo: {
+            exportedAt: formatDateForExport(new Date()),
+            exportDate: today.toISOString().split('T')[0],
+            appVersion: '1.0',
+            description: 'Routine Tracker Data Export'
+        },
+        summary: {
+            totalCompletedTasks: Object.keys(localHistory).length,
+            totalPomodoros: pomodoros.length,
+            totalMealsLogged: meals.length,
+            waterGlassesToday: waterCount,
+            totalWeeklyTasks: weeklyTasks.length,
+            totalMealPlans: mealPlans.length
+        },
+        completedTasks: {
+            description: 'Tasks completed grouped by date',
+            byDate: completedTasksByDate
+        },
+        todaysActivity: {
+            description: `Activity for ${formatDateForExport(today)}`,
+            waterGlasses: waterCount,
+            pomodoroSessions: formattedPomodoros.filter(p => p.date === todayStr),
+            mealsLogged: formattedMeals.filter(m => m.date === todayStr)
+        },
+        allPomodoros: {
+            description: 'All logged pomodoro/work sessions',
+            sessions: formattedPomodoros
+        },
+        allMeals: {
+            description: 'All logged meals',
+            meals: formattedMeals
+        },
+        weeklyPlanning: {
+            description: 'Weekly task planning',
+            currentWeek: currentWeekStart,
+            tasks: formattedWeeklyTasks
+        },
+        mealPlanning: {
+            description: 'Meal plans and recipes',
+            currentWeek: currentWeekStart,
+            plans: formattedMealPlans
+        },
+        rawHistory: {
+            description: 'Raw completion history (for backup/import)',
+            data: localHistory
+        }
     };
 
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    // Format with 2-space indentation for readability
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
     const downloadAnchor = document.createElement('a');
+    const fileName = `routine_backup_${today.toISOString().split('T')[0]}.json`;
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "routine_backup.json");
+    downloadAnchor.setAttribute("download", fileName);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

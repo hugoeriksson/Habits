@@ -1511,3 +1511,102 @@ button.secondary:hover {
         min-width: 32px;
     }
 }
+
+/* ============================================
+   HISTORY VIEW (Task Completion History)
+   ============================================ */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.history-group {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.history-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.history-label.today {
+    background: linear-gradient(135deg, var(--accent-success), #059669);
+    color: white;
+}
+
+.history-label.yesterday {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+}
+
+.history-label.recent {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.history-label.older {
+    background: rgba(148, 163, 184, 0.2);
+    color: var(--text-secondary);
+}
+
+.history-count {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.history-tasks {
+    padding: 8px 0;
+}
+
+.history-task {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    transition: background 0.2s;
+}
+
+.history-task:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.history-check {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-success);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.history-task-name {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.history-task-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
